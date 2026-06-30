@@ -343,8 +343,7 @@ function buildChart() {
       });
     });
   }};
-  chart=const isMobile = window.innerWidth < 768;
-new Chart(canvas.getContext('2d'),{type:'line',data:{labels,datasets},plugins:[rankLabelPlugin],options:{
+  chart=new Chart(canvas.getContext('2d'),{type:'line',data:{labels,datasets},plugins:[rankLabelPlugin],options:{
     responsive:true,maintainAspectRatio:false,animation:{duration:250},
     scales:{
       y:{reverse:true,min:0.5,max:N+0.5,
@@ -383,6 +382,7 @@ function toggleHighlight(p){
   }); chart.update('none');
   document.querySelectorAll('.player-item').forEach(el=>el.classList.toggle('active',parseInt(el.dataset.idx)===p));
 }
+const isMobile = window.innerWidth < 768;
 function resetHighlight(){
   activePlayer=null; const N=data?.members.length||0;
   chart?.data.datasets.forEach((ds,i)=>{ds.borderColor=ds.backgroundColor=PALETTE[i];ds.borderWidth=1.8;ds.pointRadius=isMobile?1:2;ds.order=N-i;});
