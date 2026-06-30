@@ -343,7 +343,8 @@ function buildChart() {
       });
     });
   }};
-  chart=new Chart(canvas.getContext('2d'),{type:'line',data:{labels,datasets},plugins:[rankLabelPlugin],options:{
+  chart=const isMobile = window.innerWidth < 768;
+new Chart(canvas.getContext('2d'),{type:'line',data:{labels,datasets},plugins:[rankLabelPlugin],options:{
     responsive:true,maintainAspectRatio:false,animation:{duration:250},
     scales:{
       y:{reverse:true,min:0.5,max:N+0.5,
@@ -378,13 +379,13 @@ function toggleHighlight(p){
   chart.data.datasets.forEach((ds,i)=>{
     const a=i===p;
     ds.borderColor=ds.backgroundColor=a?PALETTE[i]:hexAlpha(PALETTE[i],0.07);
-    ds.borderWidth=a?3:1; ds.pointRadius=a?3:1; ds.order=a?0:N;
+    ds.borderWidth=a?3:1; ds.pointRadius=a?(isMobile?2:3):(isMobile?0.5:1); ds.order=a?0:N;
   }); chart.update('none');
   document.querySelectorAll('.player-item').forEach(el=>el.classList.toggle('active',parseInt(el.dataset.idx)===p));
 }
 function resetHighlight(){
   activePlayer=null; const N=data?.members.length||0;
-  chart?.data.datasets.forEach((ds,i)=>{ds.borderColor=ds.backgroundColor=PALETTE[i];ds.borderWidth=1.8;ds.pointRadius=2;ds.order=N-i;});
+  chart?.data.datasets.forEach((ds,i)=>{ds.borderColor=ds.backgroundColor=PALETTE[i];ds.borderWidth=1.8;ds.pointRadius=isMobile?1:2;ds.order=N-i;});
   chart?.update('none'); document.querySelectorAll('.player-item').forEach(el=>el.classList.remove('active'));
 }
 
