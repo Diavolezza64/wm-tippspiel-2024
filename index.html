@@ -1268,7 +1268,7 @@ function hideTeamPopup(){
   if(popup) popup.style.display = 'none';
 }
 
-function openTeamGroup(name){
+function openTeamGroup(name){hideTeamPopup();
   // Flaggen-Emojis (2x Regional Indicator Surrogate-Paar) entfernen, dann matchen
   const clean=name.replace(/\uD83C[\uDDE0-\uDDFF]\uD83C[\uDDE0-\uDDFF]/g,'').replace(/\s+/g,' ').trim();
   const gi=WM_GRUPPEN.findIndex(g=>g.teams.some(t=>t===clean||clean.includes(t)||t.includes(clean)));
@@ -1534,22 +1534,22 @@ function renderGruppeKader(){
 // ── Finalspiele / KO-Runde ───────────────────────────────────────────────────
 const WM_FINAL={
   r32:[
-    {d:'Mo 30.06',o:'Boston',        t1:'🇩🇪 Deutschland',   t2:'3. A/B/C/D/F'},
+    {d:'Mo 29.06',o:'Boston',        t1:'🇩🇪 Deutschland',   t2:'3. A/B/C/D/F'},
     {d:'Di 30.06',o:'New York/NJ',   t1:'1. I',              t2:'3. C/D/F/G/H'},
-    {d:'So 29.06',o:'Los Angeles',   t1:'🇿🇦 Südafrika',     t2:'🇨🇦 Kanada'},
-    {d:'Di 30.06',o:'Monterrey',     t1:'1. F',              t2:'🇲🇦 Marokko'},
-    {d:'Fr 03.07',o:'Toronto',       t1:'2. K',              t2:'2. L'},
+    {d:'So 28.06',o:'Los Angeles',   t1:'🇿🇦 Südafrika',     t2:'🇨🇦 Kanada'},
+    {d:'Mo 29.06',o:'Monterrey',     t1:'1. F',              t2:'🇲🇦 Marokko'},
+    {d:'Do 02.07',o:'Toronto',       t1:'2. K',              t2:'2. L'},
     {d:'Do 02.07',o:'Los Angeles',   t1:'1. H',              t2:'1. J'},
-    {d:'Do 02.07',o:'San Francisco', t1:'🇺🇸 USA',           t2:'3. B/E/F/I/J'},
+    {d:'Mi 01.07',o:'San Francisco', t1:'🇺🇸 USA',           t2:'3. B/E/F/I/J'},
     {d:'Mi 01.07',o:'Seattle',       t1:'1. G',              t2:'3. A/E/H/I/J'},
     {d:'Mo 29.06',o:'Houston',       t1:'🇧🇷 Brasilien',     t2:'2. F'},
     {d:'Di 30.06',o:'Dallas',        t1:'2. E',              t2:'2. I'},
-    {d:'Mi 01.07',o:'Mexico City',   t1:'🇲🇽 Mexiko',        t2:'3. C/E/F/H/I'},
+    {d:'Di 30.06',o:'Mexico City',   t1:'🇲🇽 Mexiko',        t2:'3. C/E/F/H/I'},
     {d:'Mi 01.07',o:'Atlanta',       t1:'1. L',              t2:'3. E/H/I/J/K'},
-    {d:'Sa 04.07',o:'Miami',         t1:'🇦🇷 Argentinien',   t2:'2. H'},
+    {d:'Fr 03.07',o:'Miami',         t1:'🇦🇷 Argentinien',   t2:'2. H'},
     {d:'Fr 03.07',o:'Dallas',        t1:'2. D',              t2:'2. G'},
-    {d:'Fr 03.07',o:'Vancouver',     t1:'🇨🇭 Schweiz',       t2:'3. E/F/G/I/J'},
-    {d:'Sa 04.07',o:'Kansas City',   t1:'1. K',              t2:'3. D/E/I/J/L'},
+    {d:'Do 02.07',o:'Vancouver',     t1:'🇨🇭 Schweiz',       t2:'3. E/F/G/I/J'},
+    {d:'Fr 03.07',o:'Kansas City',   t1:'1. K',              t2:'3. D/E/I/J/L'},
   ],
   r16:[
     {d:'Sa 04.07',o:'Philadelphia',  t1:'Gew. Boston',        t2:'Gew. New York/NJ'},
@@ -1642,7 +1642,7 @@ function renderFinalspiele(){
       const f2=FLAGS[t2]?FLAGS[t2]+' ':'';
       const top=Math.round(cys[r][i]-CH/2)+28;
       cards+=`<div style="position:absolute;left:${x}px;top:${top}px;width:${w}px;background:#0d1b2a;border:1px solid ${bdr};border-radius:3px;padding:2px 4px;box-sizing:border-box;font-size:${fSize}px">`+
-        `<div style="color:#fff;font-size:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:1px">${m.d} · ${m.o}</div>`+
+        `<div style="color:#fff;font-size:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:1px">${(live&&live.d?live.d:m.d)} · ${m.o}</div>`+
         `<div style="display:flex;align-items:center;gap:3px">`+
           `<div style="flex:1;min-width:0">`+
             `<div style="color:${t1?tCol:'#3a5a6a'};padding:1px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:${t1?'normal':'italic'}${r===0&&t1?';cursor:pointer;text-decoration:underline dotted':''}" ${r===0&&t1?`onmouseenter="showTeamPopup('${t1.replace(/'/g,"\\'")}',event)" onmouseleave="hideTeamPopup()" onclick="openTeamGroup('${t1.replace(/'/g,"\\'")}')"`:''} title="${r===0&&t1?'Hover: Gruppe & Kader | Klick: Tab öffnen':''}">${f1}${t1||'wird ermittelt'}</div>`+
