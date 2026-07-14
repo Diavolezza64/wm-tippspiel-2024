@@ -1,0 +1,26 @@
+# Generierte Ausgaben (werden lokal neu erstellt)
+data/
+output/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+.AppleDouble
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+
+# Persönliche Daten (werden von find_gruppe.py generiert)
+config/teilnehmer.json
+
+# Setup-Script (nur einmalig nötig)
+setup_github.command
