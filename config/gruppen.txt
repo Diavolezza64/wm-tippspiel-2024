@@ -1,0 +1,5 @@
+# Tippgruppen auf wmtippspiel.srf.ch
+# Eine Gruppe pro Zeile – Zeilen mit # werden ignoriert
+# Alle Mitglieder aller Gruppen landen zusammen in teilnehmer.json
+
+46532

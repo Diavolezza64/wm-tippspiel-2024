@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Tippspiel">
+  <title>🏆 Tippspiel – Turnierauswahl</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+      background: #f2f2f7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px 60px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .header .trophy {
+      font-size: 52px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1c1c1e;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      margin-top: 6px;
+      font-size: 15px;
+      color: #6c6c70;
+    }
+
+    /* ── Turnier-Karten ── */
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      padding: 24px 32px;
+      min-width: 220px;
+      max-width: 280px;
+      flex: 1 1 220px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: transform .15s ease, box-shadow .15s ease;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 24px rgba(0,0,0,.12);
+    }
+    .card.aktiv {
+      border-color: #1a50a0;
+    }
+    .card .badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #1a50a0;
+      margin-bottom: 2px;
+    }
+    .card .name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1c1c1e;
+    }
+    .card .sub {
+      font-size: 12px;
+      color: #6c6c70;
+      line-height: 1.4;
+    }
+    .card .arrow {
+      margin-top: 14px;
+      font-size: 13px;
+      color: #1a50a0;
+      font-weight: 600;
+    }
+
+    /* ── Hinweis ── */
+    .hint {
+      margin-top: 40px;
+      font-size: 12px;
+      color: #aeaeb2;
+      text-align: center;
+      max-width: 400px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="trophy">🏆</div>
+    <h1>Tippspiel</h1>
+    <p>Turnier auswählen</p>
+  </div>
+
+  <div class="grid" id="turnier-grid">
+    <!-- Wird per JS aus TURNIERE-Array befüllt -->
+  </div>
+
+  <p class="hint">
+    Klick öffnet das Dashboard des jeweiligen Turniers.<br>
+    Neue Turniere werden automatisch hinzugefügt.
+  </p>
+
+  <script>
+// ── Turnierliste – wird von wm_auto.py automatisch ergänzt ─────────
+const TURNIERE = [
+  {
+    "name": "WM 2026",
+    "datei": "WM_Rangverlauf.html",
+    "sub": "Fussball-Weltmeisterschaft USA / Kanada / Mexiko",
+    "aktiv": true
+  },
+  {
+    "name": "WM 2022",
+    "datei": "WM_2022_Archiv.html",
+    "sub": "Fussball-Weltmeisterschaft Katar",
+    "aktiv": false
+  },
+  {
+    "name": "EM 2024",
+    "datei": "EM_2024_Archiv.html",
+    "sub": "UEFA Fussball-Europameisterschaft Deutschland",
+    "aktiv": false
+  }
+];
+
+// ── Karten rendern ──────────────────────────────────────────────────
+(function() {
+  const grid = document.getElementById('turnier-grid');
+  const sorted = TURNIERE.slice().reverse(); // neuestes zuerst
+  sorted.forEach(t => {
+    const a = document.createElement('a');
+    a.href = t.datei;
+    a.className = 'card' + (t.aktiv ? ' aktiv' : '');
+    a.innerHTML = `
+      ${t.aktiv ? '<div class="badge">Aktuell</div>' : ''}
+      <div class="name">${t.name}</div>
+      ${t.sub ? `<div class="sub">${t.sub}</div>` : ''}
+      <div class="arrow">Rangliste öffnen →</div>
+    `;
+    grid.appendChild(a);
+  });
+})();
+  </script>
+</body>
+</html>

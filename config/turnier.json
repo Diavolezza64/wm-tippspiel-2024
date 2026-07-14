@@ -1,0 +1,10 @@
+{
+  "name": "WM 2026",
+  "kuerzel": "WM",
+  "jahr": "2026",
+  "sub": "Fussball-Weltmeisterschaft USA / Kanada / Mexiko",
+  "srf_host": "wmtippspiel.srf.ch",
+  "torschuetzen_url": "https://www.fussballdaten.de/wm/tore/",
+  "smb_subfolder": "Fussball Tippspiel 2026",
+  "html_datei": "WM_Rangverlauf.html"
+}
