@@ -22,5 +22,9 @@ desktop.ini
 # Persönliche Daten (werden von find_gruppe.py generiert)
 config/teilnehmer.json
 
+# GitHub-Zugangsdaten (privat, nie auf GitHub laden)
+config/github_token.txt
+config/github_repo.txt
+
 # Setup-Script (nur einmalig nötig)
 setup_github.command
