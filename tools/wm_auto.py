@@ -21,6 +21,7 @@ from datetime import datetime
 # wm_auto.py liegt in tools/ → Stammverzeichnis = eine Ebene höher
 TOOLS_DIR  = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_DIR = os.path.dirname(TOOLS_DIR)          # Projekt-Root
+BASE_DIR   = SCRIPT_DIR
 WEB_DIR    = os.path.join(SCRIPT_DIR, 'web')     # HTML-Dateien
 CONFIG_DIR = os.path.join(SCRIPT_DIR, 'config')
 DATA_DIR   = os.path.join(SCRIPT_DIR, 'data')
@@ -1193,12 +1194,13 @@ def _self_update():
 def _update_html_template():
     """Lädt die neueste WM_Rangverlauf.html von GitHub falls update_source.txt vorhanden."""
     import urllib.request as urlreq
+    html_datei = TURNIER.get('html_datei', 'WM_Rangverlauf.html')
     src_file  = os.path.join(CONFIG_DIR, 'update_source.txt')
-    html_file = os.path.join(BASE_DIR, 'web', HTML_DATEI)
+    html_file = os.path.join(BASE_DIR, 'web', html_datei)
     if not os.path.exists(src_file):
         return
     base = open(src_file, encoding='utf-8').read().strip()
-    url  = f'{base}/web/{HTML_DATEI}'
+    url  = f'{base}/web/{html_datei}'
     try:
         req = urlreq.Request(url, headers={'User-Agent': 'tippspiel'})
         data = urlreq.urlopen(req, timeout=30).read()
