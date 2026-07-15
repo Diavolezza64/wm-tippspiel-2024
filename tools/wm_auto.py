@@ -1168,9 +1168,100 @@ def upload_to_github():
         print(f'   ⚠️  GitHub-Upload fehlgeschlagen ({e.code}): {msg}')
 
 
+def _auto_github_setup():
+    """
+    Richtet Git + GitHub automatisch ein falls:
+    - config/github_token.txt vorhanden
+    - aber noch kein .git Verzeichnis existiert
+    Repo-Name wird aus dem Ordnernamen abgeleitet.
+    """
+    import urllib.request as urlreq
+    token_file = os.path.join(CONFIG_DIR, 'github_token.txt')
+    repo_file  = os.path.join(CONFIG_DIR, 'github_repo.txt')
+    git_dir    = os.path.join(BASE_DIR, '.git')
+
+    if os.path.exists(git_dir) or not os.path.exists(token_file):
+        return  # Bereits eingerichtet oder kein Token
+
+    token = open(token_file, encoding='utf-8').read().strip()
+    if not token:
+        return
+
+    print('→ GitHub Ersteinrichtung …')
+
+    # Username via API
+    try:
+        req = urlreq.Request('https://api.github.com/user',
+            headers={'Authorization': f'token {token}', 'User-Agent': 'tippspiel'})
+        user = json.loads(urlreq.urlopen(req, timeout=10).read())
+        gh_user = user.get('login', '')
+        gh_name = user.get('name', gh_user)
+        gh_email = user.get('email', '') or f'{gh_user}@github.com'
+    except Exception as e:
+        print(f'   ⚠️  GitHub-API nicht erreichbar: {e}')
+        return
+
+    # Repo-Name aus Ordnername ableiten (Fussball-Tippspiel-Daniel-main → Fussball-Tippspiel-Daniel)
+    folder = os.path.basename(BASE_DIR)
+    repo_name = folder.removesuffix('-main').removesuffix('-master')
+
+    print(f'   Benutzer : {gh_user}')
+    print(f'   Repo     : {repo_name}')
+
+    # git init + remote
+    os.system(f'git -C "{BASE_DIR}" init -b main')
+    os.system(f'git -C "{BASE_DIR}" config user.email "{gh_email}"')
+    os.system(f'git -C "{BASE_DIR}" config user.name "{gh_name}"')
+    remote = f'https://{token}@github.com/{gh_user}/{repo_name}.git'
+    os.system(f'git -C "{BASE_DIR}" remote remove origin 2>/dev/null || true')
+    os.system(f'git -C "{BASE_DIR}" remote add origin "{remote}"')
+
+    # Repo speichern
+    with open(repo_file, 'w') as f:
+        f.write(f'{gh_user}/{repo_name}')
+
+    # Initialer Push (nach wm_auto.py Durchlauf, nicht jetzt)
+    # Marker setzen damit upload_to_github() weiss dass git push nötig ist
+    print(f'   ✅ Git eingerichtet → wird nach Datenupdate gepusht')
+
+
+def _git_push_if_setup():
+    """Pusht falls .git vorhanden und Token gesetzt."""
+    import subprocess
+    git_dir   = os.path.join(BASE_DIR, '.git')
+    token_file = os.path.join(CONFIG_DIR, 'github_token.txt')
+    repo_file  = os.path.join(CONFIG_DIR, 'github_repo.txt')
+
+    if not os.path.exists(git_dir) or not os.path.exists(token_file):
+        return
+
+    token = open(token_file, encoding='utf-8').read().strip()
+    if os.path.exists(repo_file):
+        gh_repo = open(repo_file, encoding='utf-8').read().strip()
+        remote = f'https://{token}@github.com/{gh_repo}.git'
+        subprocess.run(['git', '-C', BASE_DIR, 'remote', 'set-url', 'origin', remote],
+                       capture_output=True)
+
+    subprocess.run(['git', '-C', BASE_DIR, 'add', '.'], capture_output=True)
+    result = subprocess.run(['git', '-C', BASE_DIR, 'diff', '--cached', '--quiet'],
+                            capture_output=True)
+    if result.returncode == 1:  # Änderungen vorhanden
+        from datetime import datetime as dt
+        msg = f'Auto-Update {dt.now().strftime("%Y-%m-%d %H:%M")}'
+        subprocess.run(['git', '-C', BASE_DIR, 'commit', '-m', msg], capture_output=True)
+        r = subprocess.run(['git', '-C', BASE_DIR, 'push', '-u', 'origin', 'main'],
+                           capture_output=True)
+        if r.returncode == 0:
+            print('   ✅ GitHub aktualisiert')
+        else:
+            print('   ⚠️  GitHub-Push fehlgeschlagen')
+
+
 def main():
     today = datetime.now().strftime('%Y-%m-%d')
     print(f'\n🏆 {TURNIER["name"]} – Abruf {today}')
+
+    _auto_github_setup()
 
     print('→ Browser-Session aufbauen …')
     session = make_session()
@@ -1235,6 +1326,7 @@ def main():
 
     print('→ GitHub Pages aktualisieren …')
     upload_to_github()
+    _git_push_if_setup()
 
     print('→ index.html aktualisieren …')
     update_index_html()
