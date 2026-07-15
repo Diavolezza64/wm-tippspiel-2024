@@ -26,6 +26,8 @@ config/teilnehmer.json
 config/hidden_players.csv
 config/extra_players.csv
 config/ausschluss.txt
+config/gruppen.txt
+config/teilnehmer.json
 
 # GitHub-Zugangsdaten (privat, nie auf GitHub laden)
 config/github_token.txt

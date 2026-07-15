@@ -1,6 +1,6 @@
-# 🏆 Fussball Tippspiel Beat
+# 🏆 Fussball Tippspiel
 
-Automatische Auswertung der SRF Fussball-Tippspiel-Gruppe **UZH_physik**.  
+Automatische Auswertung deiner SRF Fussball-Tippspiel-Gruppe.  
 Das Script holt die aktuellen Daten vom SRF-Server und erstellt ein lokales HTML-Dashboard.
 
 ---
@@ -10,6 +10,9 @@ Das Script holt die aktuellen Daten vom SRF-Server und erstellt ein lokales HTML
 1. Oben rechts auf **Code → Download ZIP** klicken
 2. ZIP entpacken (z.B. in den Downloads-Ordner)
 3. Ordner öffnen
+4. Datei `config/gruppen.txt.example` kopieren und umbenennen zu `config/gruppen.txt`
+5. `config/gruppen.txt` öffnen und deine **Gruppen-ID** eintragen  
+   *(Zahl aus der SRF-URL: `wmtippspiel.srf.ch/gruppe/`**12345**)*
 
 ---
 

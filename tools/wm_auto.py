@@ -83,15 +83,44 @@ def cleanup_old_files():
 
 def _auto_update_members():
     """
-    Prüft ob gruppen.txt neuer ist als teilnehmer.json.
-    Falls ja → find_gruppe.py automatisch ausführen, um Mitglieder neu zu laden.
+    Prüft ob gruppen.txt existiert und ob sie neuer ist als teilnehmer.json.
+    Falls gruppen.txt fehlt → Ersteinrichtung anleiten.
+    Falls gruppen.txt neuer → find_gruppe.py automatisch ausführen.
     """
     gruppen_txt   = os.path.join(CONFIG_DIR, 'gruppen.txt')
+    example_txt   = os.path.join(CONFIG_DIR, 'gruppen.txt.example')
     teilnehmer    = os.path.join(CONFIG_DIR, 'teilnehmer.json')
     find_script   = os.path.join(CONFIG_DIR, 'find_gruppe.py')
 
-    if not os.path.exists(gruppen_txt) or not os.path.exists(find_script):
-        return  # nichts zu tun
+    # Ersteinrichtung: gruppen.txt fehlt
+    if not os.path.exists(gruppen_txt):
+        print()
+        print('╔══════════════════════════════════════════════════════════╗')
+        print('║  ERSTEINRICHTUNG – Gruppen-ID fehlt                     ║')
+        print('╠══════════════════════════════════════════════════════════╣')
+        print('║  1. Datei öffnen:  config/gruppen.txt.example           ║')
+        print('║  2. Kopieren als:  config/gruppen.txt                   ║')
+        print('║  3. Deine Gruppen-ID eintragen (Zahl aus der SRF-URL)   ║')
+        print('║  4. Dieses Script erneut starten                        ║')
+        print('╚══════════════════════════════════════════════════════════╝')
+        print()
+        sys.exit(0)
+
+    # Gruppen-ID prüfen (darf nicht Platzhalter sein)
+    with open(gruppen_txt, 'r', encoding='utf-8') as f:
+        ids = [l.strip() for l in f if l.strip() and not l.startswith('#')]
+    if not ids or ids[0] == 'DEINE_GRUPPEN_ID_HIER':
+        print()
+        print('╔══════════════════════════════════════════════════════════╗')
+        print('║  EINRICHTUNG – Bitte Gruppen-ID eintragen               ║')
+        print('║  Datei:  config/gruppen.txt                             ║')
+        print('║  Inhalt: Deine Gruppen-ID (Zahl aus der SRF-URL)        ║')
+        print('╚══════════════════════════════════════════════════════════╝')
+        print()
+        sys.exit(0)
+
+    if not os.path.exists(find_script):
+        return
 
     gruppen_mtime    = os.path.getmtime(gruppen_txt)
     teilnehmer_mtime = os.path.getmtime(teilnehmer) if os.path.exists(teilnehmer) else 0

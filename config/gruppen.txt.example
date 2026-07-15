@@ -1,0 +1,13 @@
+# Meine Tippgruppe auf wmtippspiel.srf.ch
+# ─────────────────────────────────────────
+# 1. Diese Datei kopieren und umbenennen zu:  gruppen.txt
+# 2. Deine Gruppen-ID eintragen (Zeilen mit # werden ignoriert)
+#
+# Gruppen-ID findest du so:
+#   → wmtippspiel.srf.ch aufrufen
+#   → Deine Gruppe öffnen
+#   → Zahl in der URL: .../gruppe/12345  →  12345 eintragen
+#
+# Mehrere Gruppen: eine ID pro Zeile
+
+DEINE_GRUPPEN_ID_HIER
