@@ -223,6 +223,7 @@ const EMBEDDED_TIPPS = /*TIPPS_DATA*/[{"name": "Alessio C", "datum": "11.06.2026
     </div>
     <div id="tab-punkte" class="tab-content" style="display:none!important"></div>
     <div id="tab-rangverl" class="tab-content" style="flex-direction:column">
+      <div id="rv-filter-bar" style="display:flex;flex-wrap:wrap;gap:5px;padding:6px 8px 4px;flex-shrink:0;border-bottom:1px solid #e5e5ea;min-height:32px"></div>
       <div style="position:relative;flex:1;min-height:0">
         <div id="hint-rangverl" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#aaa">Wird geladen…</div>
         <canvas id="myChart"></canvas>
@@ -285,6 +286,7 @@ const PALETTE = [
 
 let chart = null, freqChartInstance = null;
 let activePlayer = null, data = null, tipData = null;
+let _rvFilter = new Set();
 let currentTab = 'rangliste';
 let freqSort = { col: 'tips', dir: -1 };   // -1 = desc
 let freqNormalize = false;
@@ -622,6 +624,43 @@ function onTipps(text, filename, dz) {
 }
 
 // ── Chart ─────────────────────────────────────────────────────
+function renderRvFilter() {
+  const bar = document.getElementById('rv-filter-bar');
+  if (!bar || !data) return;
+  const hidden = getHiddenPlayers();
+  const players = data.members.filter(n => !hidden.has(n));
+  const anySelected = _rvFilter.size > 0;
+  bar.innerHTML = players.map((name, i) => {
+    const realIdx = data.members.indexOf(name);
+    const color = PALETTE[realIdx] || '#888';
+    const active = _rvFilter.has(name);
+    const dim = anySelected && !active;
+    return `<span onclick="toggleRvFilter('${name.replace(/'/g,"\'")}',${realIdx})"
+      style="cursor:pointer;font-size:11px;padding:2px 9px;border-radius:12px;
+             border:1.5px solid ${color};
+             background:${active ? color : 'transparent'};
+             color:${active ? '#fff' : color};
+             opacity:${dim ? '0.35' : '1'};
+             transition:all 0.15s;user-select:none">${name}</span>`;
+  }).join('');
+}
+
+function toggleRvFilter(name, paletteIdx) {
+  if (_rvFilter.has(name)) { _rvFilter.delete(name); } else { _rvFilter.add(name); }
+  renderRvFilter();
+  applyRvFilter();
+}
+
+function applyRvFilter() {
+  if (!chart) return;
+  const anySelected = _rvFilter.size > 0;
+  chart.data.datasets.forEach((ds, i) => {
+    const visible = !anySelected || _rvFilter.has(ds.label);
+    chart.setDatasetVisibility(i, visible);
+  });
+  chart.update('none');
+}
+
 function buildChart() {
   const {members,gameNums,gameDates,ranks,points}=data, N=members.length;
   const labels=gameNums.map((n,i)=>`Spiel ${n}\n${(gameDates[i]||'').slice(0,6)}`);
@@ -660,6 +699,8 @@ function buildChart() {
       cornerRadius:8,
       callbacks:{title:c=>c[0]?.label||'',label:c=>`  ${data.members[c.datasetIndex]}: Rang ${c.raw}   (${data.points[c.datasetIndex][c.dataIndex]} Pkt. kum.)`}}}
   }});
+  renderRvFilter();
+  applyRvFilter();
 }
 
 // ── Sidebar ───────────────────────────────────────────────────
@@ -714,7 +755,7 @@ function switchTab(name){
   document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='rangliste') calcRanking();
-  else if(name==='rangverl') { requestAnimationFrame(()=>{ if(!chart) buildChart(); else chart.resize(); }); }
+  else if(name==='rangverl') { requestAnimationFrame(()=>{ if(!chart) buildChart(); else { chart.resize(); renderRvFilter(); } }); }
   else if(name==='punkte') calcPunkteverlauf();
   else if(name==='resultate') calcResultate();
   else if(name==='gruppen') calcGruppen();
