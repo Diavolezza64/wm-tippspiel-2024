@@ -157,7 +157,7 @@ const EMBEDDED_TIPPS = /*TIPPS_DATA*/[{"name": "Alessio C", "datum": "11.06.2026
     <div id="tab-rangliste" class="tab-content active" style="overflow-y:auto">
       <div class="sub-tab-bar">
         <button class="sub-tab-btn active" onclick="switchRangliste('uebersicht')">📊 SRF-Punkte</button>
-        <button class="sub-tab-btn" onclick="switchRangliste('rangverlauf')">📈 Rangverlauf</button>
+        <button class="sub-tab-btn" onclick="switchRangliste('rangverlauf')">📈 Punkteverlauf</button>
         <button class="sub-tab-btn" onclick="switchRangliste('10punkte')">🔟 10 Punkte</button>
         <button class="sub-tab-btn" onclick="switchRangliste('10plus')">📈 +10</button>
         <button class="sub-tab-btn" onclick="switchRangliste('x2')">🔥 ×2</button>
@@ -219,7 +219,7 @@ const EMBEDDED_TIPPS = /*TIPPS_DATA*/[{"name": "Alessio C", "datum": "11.06.2026
       </div>
     </div>
     <div id="tab-punkte" class="tab-content" style="display:none!important"></div>
-    <div id="tab-rangverl" class="tab-content" style="display:none;flex-direction:column">
+    <div id="tab-rangverl" class="tab-content" style="flex-direction:column">
       <div style="position:relative;flex:1;min-height:0">
         <div id="hint-rangverl" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#aaa">Wird geladen…</div>
         <canvas id="myChart"></canvas>
@@ -560,7 +560,7 @@ function switchTab(name){
   document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='rangliste') calcRanking();
-  else if(name==='rangverl') { if(!chart) buildChart(); else chart.update('none'); document.getElementById('myChart').style.display='block'; }
+  else if(name==='rangverl') { requestAnimationFrame(()=>{ if(!chart) buildChart(); else chart.resize(); }); }
   else if(name==='punkte') calcPunkteverlauf();
   else if(name==='resultate') calcResultate();
   else if(name==='gruppen') calcGruppen();
