@@ -1049,27 +1049,30 @@ GITHUB_REPO  = _read_config('github_repo.txt', 'Diavolezza64/Fussball-Tippspiel-
 
 
 def load_config_csvs():
-    """Liest config/hidden_players.csv und config/extra_players.csv.
-    Gibt JSON-Strings zurück, die in die HTML-Marker injiziert werden."""
+    """Liest data/ehemalige_spieler.csv und data/zusatz_spieler.csv.
+    Gibt JSON-Strings zurück, die in die HTML-Marker injiziert werden.
+    Diese Dateien sind in .gitignore und gehen NIE auf GitHub."""
     import json as _json
 
-    hidden_path = os.path.join(BASE_DIR, 'config', 'hidden_players.csv')
-    extra_path  = os.path.join(BASE_DIR, 'config', 'extra_players.csv')
+    hidden_path = os.path.join(BASE_DIR, 'data', 'ehemalige_spieler.csv')
+    extra_path  = os.path.join(BASE_DIR, 'data', 'zusatz_spieler.csv')
 
-    # hidden_players.csv: eine Spalte "name"
+    # ehemalige_spieler.csv: eine Spalte "name"
     hidden = []
     if os.path.exists(hidden_path):
         with open(hidden_path, encoding='utf-8') as f:
             rows = list(csv.DictReader(f))
             hidden = [r.get('name','').strip() for r in rows if r.get('name','').strip()]
+        print(f'   Config: {len(hidden)} ehemalige Spieler geladen')
 
-    # extra_players.csv: Spalten "name","id"
+    # zusatz_spieler.csv: Spalten "name","id"
     extra = []
     if os.path.exists(extra_path):
         with open(extra_path, encoding='utf-8') as f:
             rows = list(csv.DictReader(f))
             extra = [{'name': r.get('name','').strip(), 'id': r.get('id','').strip()}
                      for r in rows if r.get('name','').strip()]
+        print(f'   Config: {len(extra)} Zusatzspieler geladen')
 
     return _json.dumps(hidden, ensure_ascii=False), _json.dumps(extra, ensure_ascii=False)
 
