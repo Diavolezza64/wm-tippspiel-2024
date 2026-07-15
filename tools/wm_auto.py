@@ -1168,6 +1168,25 @@ def upload_to_github():
         print(f'   ⚠️  GitHub-Upload fehlgeschlagen ({e.code}): {msg}')
 
 
+def _update_html_template():
+    """Lädt die neueste WM_Rangverlauf.html von GitHub falls update_source.txt vorhanden."""
+    import urllib.request as urlreq
+    src_file  = os.path.join(CONFIG_DIR, 'update_source.txt')
+    html_file = os.path.join(BASE_DIR, 'web', HTML_DATEI)
+    if not os.path.exists(src_file):
+        return
+    base = open(src_file, encoding='utf-8').read().strip()
+    url  = f'{base}/web/{HTML_DATEI}'
+    try:
+        req = urlreq.Request(url, headers={'User-Agent': 'tippspiel'})
+        data = urlreq.urlopen(req, timeout=30).read()
+        with open(html_file, 'wb') as f:
+            f.write(data)
+        print(f'   ✅ HTML-Template aktualisiert')
+    except Exception as e:
+        print(f'   ℹ️  HTML-Template Update übersprungen: {e}')
+
+
 def _auto_github_setup():
     """
     Richtet Git + GitHub automatisch ein falls:
@@ -1262,6 +1281,9 @@ def main():
     print(f'\n🏆 {TURNIER["name"]} – Abruf {today}')
 
     _auto_github_setup()
+
+    # HTML-Template aktualisieren falls update_source.txt vorhanden
+    _update_html_template()
 
     print('→ Browser-Session aufbauen …')
     session = make_session()
