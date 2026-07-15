@@ -939,7 +939,7 @@ function wideColsGF(hasZusatz){
 function prepareZusatz(){
   const zusatz=(typeof ZUSATZ_DATA!=='undefined')?ZUSATZ_DATA:{};
   const hasZusatz=Object.keys(zusatz).length>0;
-  const zusatzKeys=hasZusatz?Object.keys(Object.values(zusatz)[0]).filter(k=>k!=='punkte'):[];
+  const zusatzKeys=hasZusatz?Object.keys(Object.values(zusatz)[0]).filter(k=>k!=='punkte'&&!k.startsWith('p_')):[];
   const ZUS_LABELS=['Weltmeister','Schweiz','Tore CH','Tore Torschützenkönig','Anzahl 0:0'];
   const keyW={};
   if(hasZusatz&&zusatzKeys.length>0&&data){

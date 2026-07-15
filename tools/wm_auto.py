@@ -298,7 +298,7 @@ def fetch_all(session, rounds):
     return games_meta, player_data
 
 # ── CSVs schreiben ────────────────────────────────────────────
-def write_csvs(games_meta, player_data, today):
+def write_csvs(games_meta, player_data, today, zusatz_data=None):
     sorted_games = sorted(games_meta.values(),
                           key=lambda g: g['event_date'])
     played_games = [g for g in sorted_games
@@ -328,25 +328,28 @@ def write_csvs(games_meta, player_data, today):
     rows2 = [hdr2]
 
     cum_pts  = {m['id']: 0 for m in MEMBERS}
+    id_to_name = {m['id']: m['name'] for m in MEMBERS}
+    zus_pts = {m['id']: (zusatz_data or {}).get(id_to_name[m['id']], {}).get('punkte', 0) for m in MEMBERS}
     game_num = 0
     for g in played_games:
         for m in MEMBERS:
             pd = player_data[m['id']].get(g['bet_id'])
             cum_pts[m['id']] += (pd['score'] if pd and pd['score'] is not None else 0)
 
-        sorted_m = sorted(MEMBERS, key=lambda m: cum_pts[m['id']], reverse=True)
+        sorted_m = sorted(MEMBERS, key=lambda m: cum_pts[m['id']] + zus_pts[m['id']], reverse=True)
         ranks, prev_pts, prev_rank = {}, None, 0
         for i, m in enumerate(sorted_m):
-            if cum_pts[m['id']] != prev_pts:
+            total = cum_pts[m['id']] + zus_pts[m['id']]
+            if total != prev_pts:
                 prev_rank = i + 1
-                prev_pts  = cum_pts[m['id']]
+                prev_pts  = total
             ranks[m['id']] = prev_rank
 
         game_num += 1
         d   = datetime.fromisoformat(g['event_date'].replace('Z','+00:00'))
         row = [game_num, d.strftime('%d.%m.%Y'), g['match']]
         for m in MEMBERS:
-            row += [ranks[m['id']], cum_pts[m['id']]]
+            row += [ranks[m['id']], cum_pts[m['id']] + zus_pts[m['id']]]
         rows2.append(row)
 
     def save_csv(rows, path):
@@ -1356,7 +1359,7 @@ def main():
     print('→ CSVs schreiben …')
     rang_path  = os.path.join(DATA_DIR, f'{KUERZEL}_Rangverlauf_{today}.csv')
     tipps_path = os.path.join(DATA_DIR, f'{KUERZEL}_Tipps_{today}.csv')
-    write_csvs(games_meta, player_data, today)
+    write_csvs(games_meta, player_data, today, zusatz_data=zusatz_data)
 
     print('→ PDF generieren …')
     generate_pdf()
