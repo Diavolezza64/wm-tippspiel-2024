@@ -1,5 +1,4 @@
-# Tippgruppen auf wmtippspiel.srf.ch
-# Eine Gruppe pro Zeile – Zeilen mit # werden ignoriert
-# Alle Mitglieder aller Gruppen landen zusammen in teilnehmer.json
+# Gruppen-ID von wmtippspiel.srf.ch
+# Zahl aus der URL: .../gruppe/12345
 
-46532
+XXXXX

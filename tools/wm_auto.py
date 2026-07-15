@@ -109,7 +109,7 @@ def _auto_update_members():
     # Gruppen-ID prüfen (darf nicht Platzhalter sein)
     with open(gruppen_txt, 'r', encoding='utf-8') as f:
         ids = [l.strip() for l in f if l.strip() and not l.startswith('#')]
-    if not ids or ids[0] == 'DEINE_GRUPPEN_ID_HIER':
+    if not ids or ids[0] == 'XXXXX':
         print()
         print('╔══════════════════════════════════════════════════════════╗')
         print('║  EINRICHTUNG – Bitte Gruppen-ID eintragen               ║')
