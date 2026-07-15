@@ -430,6 +430,7 @@ _FINALS_POS = {
 
 ZUSATZ_CSV = os.path.join(DATA_DIR, f'{KUERZEL}_Zusatzfragen.csv')
 ZUSATZ_KEYS = ['wm', 'ch', 't_ch', 't_k', 'nullnull']
+ZUSATZ_PTS_KEYS = ['p_wm', 'p_ch', 'p_t_ch', 'p_t_k', 'p_nullnull']
 
 def load_zusatzfragen():
     """Liest WM_Zusatzfragen.csv und gibt {name: {wm,ch,...,punkte}} zurück."""
@@ -447,6 +448,9 @@ def load_zusatzfragen():
                 # Zahlen als int speichern
                 try:    entry[k] = int(v)
                 except: entry[k] = v if v else None
+            for k in ZUSATZ_PTS_KEYS:
+                try:    entry[k] = int(row.get(k, 0) or 0)
+                except: entry[k] = 0
             try:    entry['punkte'] = int(row.get('punkte', 0) or 0)
             except: entry['punkte'] = 0
             result[name] = entry
@@ -476,7 +480,7 @@ def save_zusatzfragen(zusatz_data):
     if not has_real:
         print('   ℹ️  Zusatzfragen: nur leere Werte – CSV wird nicht gespeichert.')
         return
-    fieldnames = ['Name'] + ZUSATZ_KEYS + ['punkte']
+    fieldnames = ['Name'] + ZUSATZ_KEYS + ZUSATZ_PTS_KEYS + ['punkte']
     with open(ZUSATZ_CSV, 'w', newline='', encoding='utf-8-sig') as f:
         w = csv.DictWriter(f, fieldnames=fieldnames, delimiter=';',
                            extrasaction='ignore')
@@ -485,6 +489,8 @@ def save_zusatzfragen(zusatz_data):
             row = {'Name': name, 'punkte': vals.get('punkte', 0)}
             for k in ZUSATZ_KEYS:
                 row[k] = vals.get(k, '')
+            for k in ZUSATZ_PTS_KEYS:
+                row[k] = vals.get(k, 0)
             w.writerow(row)
     print(f'   ✅ WM_Zusatzfragen.csv gespeichert ({len(zusatz_data)} Einträge)')
 
@@ -518,6 +524,9 @@ def fetch_zusatzfragen(session):
                 total_score += int(bet.get('total_score') or 0)
                 key = FIELD_KEYS[i] if i < len(FIELD_KEYS) else f'q{i}'
                 answers[key] = answer
+                # Per-Frage Punkte speichern
+                pts_key = f'p_{key}' if key in FIELD_KEYS else f'p_q{i}'
+                answers[pts_key] = int(bet.get('total_score') or 0)
             if answers:
                 answers['punkte'] = total_score
                 zusatz[m['name']] = answers
@@ -1178,7 +1187,11 @@ def main():
     if zusatz_data is None:
         print('   WM_Zusatzfragen.csv fehlt – hole von SRF …')
         zusatz_data = fetch_zusatzfragen(session)
-        save_zusatzfragen(zusatz_data)   # speichert nur wenn echte Daten vorhanden
+        save_zusatzfragen(zusatz_data)
+    elif zusatz_data and not any('p_wm' in v for v in zusatz_data.values()):
+        print('   WM_Zusatzfragen.csv ohne Einzelpunkte – hole neu von SRF …')
+        fresh = fetch_zusatzfragen(session)
+        if fresh: zusatz_data = fresh; save_zusatzfragen(zusatz_data)   # speichert nur wenn echte Daten vorhanden
         if not zusatz_data:
             zusatz_data = {}
     else:

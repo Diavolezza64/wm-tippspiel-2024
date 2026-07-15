@@ -957,9 +957,16 @@ function prepareZusatz(){
     const zusText=(hasZusatz&&zusatz[name]&&zusatzKeys.length>0)
       ?zusatzKeys.map(k=>{
           const v=zusatz[name][k];const w=keyW[k]||40;
-          const disp=(v===undefined||v===null)?'<span style="color:#555">—</span>'
-            :`<span style="color:#000">${typeof v==='string'?roundFrac(v):String(v)}</span>`;
-          return `<span style="display:inline-block;min-width:${w}px">${disp}</span>`;
+          const pts=zusatz[name]?.['p_'+k]??0;
+          const correct=pts>0;
+          if(v===undefined||v===null){
+            return `<span style="display:inline-block;min-width:${w}px"><span style="color:#555">—</span></span>`;
+          }
+          const txt=typeof v==='string'?roundFrac(v):String(v);
+          const inner=correct
+            ?`<span style="background:#ffd60a;color:#000;border-radius:3px;padding:0 3px;font-weight:600">${txt}</span>`
+            :`<span style="color:#000">${txt}</span>`;
+          return `<span style="display:inline-block;min-width:${w}px">${inner}</span>`;
         }).join('<span style="color:#636366;margin:0 2px">;</span>'):'';
     const zusP='';
     return{zus,zusText,zusP};
