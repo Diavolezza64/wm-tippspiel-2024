@@ -1168,6 +1168,28 @@ def upload_to_github():
         print(f'   ⚠️  GitHub-Upload fehlgeschlagen ({e.code}): {msg}')
 
 
+def _self_update():
+    """Aktualisiert wm_auto.py selbst von GitHub und startet neu falls geändert.
+    Funktioniert unabhängig davon wo der Ordner liegt oder welches Start-Script verwendet wird."""
+    import urllib.request as urlreq, sys
+    src_file = os.path.join(CONFIG_DIR, 'update_source.txt')
+    if not os.path.exists(src_file):
+        return
+    base = open(src_file, encoding='utf-8').read().strip()
+    url  = f'{base}/tools/wm_auto.py'
+    try:
+        req  = urlreq.Request(url, headers={'User-Agent': 'tippspiel'})
+        new  = urlreq.urlopen(req, timeout=15).read()
+        self = os.path.abspath(__file__)
+        if new != open(self, 'rb').read():
+            with open(self, 'wb') as f:
+                f.write(new)
+            print('   ✅ wm_auto.py aktualisiert – starte neu …')
+            os.execv(sys.executable, [sys.executable] + sys.argv)
+    except Exception:
+        pass  # offline oder kein Update nötig
+
+
 def _update_html_template():
     """Lädt die neueste WM_Rangverlauf.html von GitHub falls update_source.txt vorhanden."""
     import urllib.request as urlreq
@@ -1296,6 +1318,8 @@ def _git_push_if_setup():
 def main():
     today = datetime.now().strftime('%Y-%m-%d')
     print(f'\n🏆 {TURNIER["name"]} – Abruf {today}')
+
+    _self_update()   # Aktualisiert sich selbst von GitHub, startet neu falls nötig
 
     _auto_github_setup()
 
