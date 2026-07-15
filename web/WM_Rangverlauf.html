@@ -28,7 +28,7 @@ const EMBEDDED_TIPPS = /*TIPPS_DATA*/[{"name": "Alessio C", "datum": "11.06.2026
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
          background: #f2f2f7; color: #1c1c1e;
-         display: block; height: 100vh; overflow: hidden; }
+         display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
   /* Sidebar */
   #reset-btn { font-size: 10px; background: #e5e5ea; border: none; color: #1c1c1e;
@@ -40,7 +40,7 @@ const EMBEDDED_TIPPS = /*TIPPS_DATA*/[{"name": "Alessio C", "datum": "11.06.2026
   .player-name { font-size: 11px; flex: 1; line-height: 1.3; color: #1c1c1e; }
 
   /* Main */
-  #main { flex: 1; display: flex; flex-direction: column; padding: 10px 12px 8px; min-width: 0; }
+  #main { flex: 1; display: flex; flex-direction: column; padding: 10px 12px 8px; min-width: 0; min-height: 0; }
   .drop-zone { border: 2px dashed #c7c7cc; border-radius: 8px; padding: 6px 12px;
     text-align: center; cursor: pointer; font-size: 11px; color: #6c6c70; margin-bottom: 5px;
     flex-shrink: 0; transition: border-color 0.2s, color 0.2s; }
@@ -65,8 +65,9 @@ const EMBEDDED_TIPPS = /*TIPPS_DATA*/[{"name": "Alessio C", "datum": "11.06.2026
     font-size: 12px; padding: 4px 12px; border-radius: 6px; cursor: pointer;
     margin-bottom: 5px; flex-shrink: 0; text-align: left; }
   #ranking-toggle:hover { background: #d1d1d6; color: #000; }
-  #ranking-panel { display: none; background: #ffffff; border-radius: 8px;
-    flex-shrink: 0; max-height: 44vh; overflow: hidden; flex-direction: column; border: 1px solid #d1d1d6; }
+  #ranking-panel { display: flex; background: #ffffff; border-radius: 8px;
+    flex: 1; min-height: 0; overflow: hidden; flex-direction: column; border: 1px solid #d1d1d6; }
+  #chart-wrap { display: none; }
   #ranking-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     padding: 7px 12px 6px; border-bottom: 1px solid #d1d1d6; flex-shrink: 0; }
   #ranking-controls label { font-size: 11px; color: #3a3a3c; }
@@ -80,6 +81,7 @@ const EMBEDDED_TIPPS = /*TIPPS_DATA*/[{"name": "Alessio C", "datum": "11.06.2026
   .tab-btn.active { background: #ffffff; color: #1c1c1e; }
   .tab-content { display: none; overflow-y: auto; flex: 1; padding: 8px 12px; }
   .tab-content.active { display: block; }
+  #tab-rangverl.active { display: flex; }
   .sub-tab-bar { display: flex; gap: 2px; margin-bottom: 8px; border-bottom: 1px solid #d1d1d6; flex-wrap: wrap; }
   .sub-tab-btn { font-size: 10px; padding: 3px 10px; border: none; cursor: pointer;
     border-radius: 6px 6px 0 0; background: #f2f2f7; color: #555;
@@ -146,6 +148,7 @@ const EMBEDDED_TIPPS = /*TIPPS_DATA*/[{"name": "Alessio C", "datum": "11.06.2026
     </div>
     <div class="tab-bar" id="main-tab-bar">
       <button class="tab-btn active" onclick="switchTab('rangliste')">🏆 Rangliste</button>
+      <button class="tab-btn" onclick="switchTab('rangverl')">📈 Rangverlauf</button>
       <button class="tab-btn" onclick="switchTab('resultate')">📊 Häufigste Tipps</button>
       <button class="tab-btn" onclick="switchTab('frequenz')">🔢 Tipp-Frequenz</button>
       <button class="tab-btn" onclick="switchTab('vergleich')">⚖️ Vergleich</button>
@@ -172,7 +175,7 @@ const EMBEDDED_TIPPS = /*TIPPS_DATA*/[{"name": "Alessio C", "datum": "11.06.2026
         <button class="export-btn" onclick="exportCurrentPDF()" style="float:none">⬇ PDF</button>
         <button id="virt-toggle-btn" class="export-btn" onclick="toggleVirtual()" style="float:none;margin-left:8px;opacity:0.85" title="KI-Spieler ein-/ausblenden">🤖 ein</button>
       </div>
-      <div id="sub-uebersicht">
+      <div id="sub-uebersicht" style="overflow-x:auto">
         <div id="ranking-phasen"></div>
       </div>
       <div id="sub-rangverlauf" style="display:none">
@@ -199,23 +202,29 @@ const EMBEDDED_TIPPS = /*TIPPS_DATA*/[{"name": "Alessio C", "datum": "11.06.2026
       <div id="sub-fair" style="display:none"><div id="fair-body"></div></div>
       <div id="sub-bonus" style="display:none"><div id="bonus-body"></div></div>
       <div id="sub-favoriten" style="display:none"><div id="favoriten-body"></div></div>
-      <div id="sub-zeitraum" style="display:none;max-width:220px">
-        <div style="display:flex;gap:10px;margin-bottom:8px;align-items:center">
+      <div id="sub-zeitraum" style="display:none">
+        <div style="display:flex;gap:10px;margin-bottom:10px;align-items:center">
           <label style="font-size:11px;color:#3a3a3c">Von <select id="sel-von" onchange="updateBisOptions(); refreshTabs()"></select></label>
           <label style="font-size:11px;color:#3a3a3c">Bis <select id="sel-bis" onchange="refreshTabs()"></select></label>
+          <button class="export-btn" onclick="exportRankingCSV()" style="margin-left:8px">⬇ CSV</button>
         </div>
-        <button class="export-btn" onclick="exportRankingCSV()" style="margin-bottom:6px">⬇ CSV</button>
-        <table class="ptable" style="table-layout:fixed;width:100%">
+        <table class="ptable" style="table-layout:fixed;width:180px">
           <thead><tr>
-            <th style="width:18px">#</th>
+            <th style="width:20px">#</th>
             <th>Name</th>
-            <th style="width:28px" class="num-right">Pkt</th>
+            <th style="width:32px" class="num-right">Pkt</th>
           </tr></thead>
-          <tbody id="ranking-body"></tbody>
+          <tbody id="ranking-body-zeitraum"></tbody>
         </table>
       </div>
     </div>
     <div id="tab-punkte" class="tab-content" style="display:none!important"></div>
+    <div id="tab-rangverl" class="tab-content" style="display:none;flex-direction:column">
+      <div style="position:relative;flex:1;min-height:0">
+        <div id="hint-rangverl" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#aaa">Wird geladen…</div>
+        <canvas id="myChart"></canvas>
+      </div>
+    </div>
     <div id="tab-resultate" class="tab-content"><div id="resultate-body"></div></div>
     <div id="tab-frequenz" class="tab-content">
       <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-bottom:6px;flex-shrink:0">
@@ -256,10 +265,7 @@ const EMBEDDED_TIPPS = /*TIPPS_DATA*/[{"name": "Alessio C", "datum": "11.06.2026
     </div>
   </div>
 
-  <div id="chart-wrap">
-    <div id="hint">Daten werden geladen …</div>
-    <canvas id="myChart" style="display:none"></canvas>
-  </div>
+  <div id="chart-wrap" style="display:none"><div id="hint" style="display:none">Daten werden geladen …</div></div>
 </div>
 
 <script>
@@ -365,7 +371,7 @@ window.addEventListener('DOMContentLoaded', () => {
     data = EMBEDDED_RANG;
     if(!data.gameResults) data.gameResults = data.gameNames.map(()=>'');
     injectVirtualPlayers();
-    buildChart(); buildDropdowns();
+    buildDropdowns(); switchRangliste('uebersicht');
     const dz = document.getElementById('dz-rang');
     if (dz) { dz.textContent = `✅ Eingebettete Daten — ${data.members.length} Spieler, ${data.gameNums.length} Spiele`; dz.classList.add('loaded'); dz.onclick = null; }
     const rt = document.getElementById('ranking-toggle'); if (rt) rt.style.display = 'block';
@@ -428,7 +434,7 @@ function onRangverlauf(text, filename, dz) {
   }
   data = { members, gameNums, gameDates, gameNames, gameResults: gameNames.map(()=>''), ranks, points };
   injectVirtualPlayers();
-  buildChart(); buildDropdowns();
+  buildDropdowns(); switchRangliste('uebersicht');
   dz.textContent=`✅ ${filename}  —  ${members.length} Spieler, ${gameNums.length} Spiele`;
   dz.classList.add('loaded'); dz.onclick=null;
   const _dt = document.getElementById('dz-tipps'); if (_dt) _dt.style.display='block';
@@ -471,8 +477,8 @@ function buildChart() {
     borderWidth:1.8, pointRadius:4, pointHoverRadius:7, tension:0, fill:false, order:N-p
   }));
   if (chart) chart.destroy();
-  document.getElementById('hint').style.display='none';
-  const canvas=document.getElementById('myChart'); canvas.style.display='block';
+  const hintEl=document.getElementById('hint-rangverl'); if(hintEl) hintEl.style.display='none';
+  const canvas=document.getElementById('myChart');
   const rankLabelPlugin={id:'rankLabels',afterDatasetsDraw(ch){
     const ctx=ch.ctx;
     ch.data.datasets.forEach((ds,p)=>{
@@ -550,10 +556,11 @@ function toggleRanking(){
 }
 function switchTab(name){
   currentTab=name;
-  document.querySelectorAll('#main-tab-bar .tab-btn').forEach((b,i)=>b.classList.toggle('active',['rangliste','resultate','frequenz','vergleich','gruppen'][i]===name));
+  document.querySelectorAll('#main-tab-bar .tab-btn').forEach((b,i)=>b.classList.toggle('active',['rangliste','rangverl','resultate','frequenz','vergleich','gruppen'][i]===name));
   document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='rangliste') calcRanking();
+  else if(name==='rangverl') { if(!chart) buildChart(); else chart.update('none'); document.getElementById('myChart').style.display='block'; }
   else if(name==='punkte') calcPunkteverlauf();
   else if(name==='resultate') calcResultate();
   else if(name==='gruppen') calcGruppen();
@@ -765,15 +772,17 @@ function prepareZusatz(){
 
 function calcRanking(){
   const rows=getRankingRows();
-  document.getElementById('ranking-body').innerHTML=rows.map(r=>{
+  const rowHtml=rows.map(r=>{
     const bg=r.rank===1?'background:#fffbe6':r.rank===2?'background:#f5f5f5':r.rank===3?'background:#fff4ee':'';
     return `<tr style="${bg}">
-      <td class="rank-num" style="width:18px">${r.rank}</td>
+      <td class="rank-num" style="width:20px">${r.rank}</td>
       <td style="font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
         <span style="display:inline-block;width:7px;height:7px;border-radius:1px;background:${r.color};margin-right:4px;vertical-align:middle;flex-shrink:0"></span>${r.name}
       </td>
-      <td class="rank-pts" style="width:28px">${r.points}</td></tr>`;
+      <td class="rank-pts" style="width:32px">${r.points}</td></tr>`;
   }).join('');
+  const rb=document.getElementById('ranking-body'); if(rb) rb.innerHTML=rowHtml;
+  const rz=document.getElementById('ranking-body-zeitraum'); if(rz) rz.innerHTML=rowHtml;
 
   const el=document.getElementById('ranking-phasen');
   const n=data.gameNums.length;
@@ -3205,5 +3214,6 @@ function renderFinalspiele(){
   sw.appendChild(sel);
 })();
 </script>
+<tbody id="ranking-body" style="display:none"></tbody>
 </body>
 </html>
