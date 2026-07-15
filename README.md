@@ -30,6 +30,23 @@ Das Script:
 
 ---
 
+## 5️⃣ GitHub einrichten (optional, für Smartphone-Zugriff)
+
+Damit das Dashboard auch auf dem Handy abrufbar ist, einmalig:
+
+1. GitHub-Konto erstellen auf [github.com](https://github.com) (falls noch nicht vorhanden)
+2. Persönlichen Token erstellen:  
+   → github.com → Profilbild → Settings → Developer Settings  
+   → Personal access tokens → Tokens (classic) → **Generate new token**  
+   → Berechtigungen: **repo** (alle ankreuzen) → Token kopieren
+3. Token in die Datei `config/github_token.txt` eintragen
+4. **`Setup GitHub.bat`** doppelklicken → richtet alles vollautomatisch ein
+5. GitHub Pages aktivieren: link wird am Ende von Schritt 4 angezeigt
+
+Ab dann lädt `Start PC.bat` das Dashboard täglich automatisch auf GitHub hoch.
+
+---
+
 ## 🔑 Voraussetzungen
 
 **Eingeloggt sein beim SRF Tippspiel**  
