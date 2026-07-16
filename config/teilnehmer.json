@@ -26,7 +26,14 @@
   {
     "id": "XbPvY",
     "name": "Beat N",
-    "rank": 3
+    "rank": 3,
+    "zusatz": {
+      "wm": "Frankreich",
+      "ch": "Achtelfinal",
+      "t_ch": "8",
+      "t_k": "10",
+      "nullnull": "8"
+    }
   },
   {
     "id": "JD4nY",

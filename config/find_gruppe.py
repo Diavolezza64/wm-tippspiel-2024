@@ -459,14 +459,16 @@ def fetch_zusatz_antworten(session, members):
 
             answers = _parse_zusatz_from_html(resp.text)
 
-            # Redirect erkannt und keine Antworten → /round/40 an Redirect-URL hängen
+            # Redirect erkannt → SRF zeigt eigenes Profil anders an (eingeloggter User).
+            # Lösung: ohne Session-Cookies holen (anonyme öffentliche Ansicht).
             if answers is None and resp.url != url:
-                redirect_base = resp.url.split('?')[0].rstrip('/')
-                if '/round/' not in redirect_base:
-                    alt_url = redirect_base + '/round/40'
-                    alt_resp = session.get(alt_url, timeout=20)
-                    if alt_resp.status_code == 200:
-                        answers = _parse_zusatz_from_html(alt_resp.text)
+                import requests as _req
+                anon_resp = _req.get(url, timeout=20, headers={
+                    'User-Agent': session.headers.get('User-Agent', _UA),
+                    'Accept-Language': 'de-CH,de;q=0.9,en;q=0.8',
+                })
+                if anon_resp.status_code == 200:
+                    answers = _parse_zusatz_from_html(anon_resp.text)
 
             if answers is not None:
                 result[m['id']] = answers
