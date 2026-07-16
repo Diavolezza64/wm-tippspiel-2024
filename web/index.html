@@ -20,26 +20,10 @@
     }
 
     /* ── Header ── */
-    .header {
-      text-align: center;
-      margin-bottom: 48px;
-    }
-    .header .trophy {
-      font-size: 52px;
-      line-height: 1;
-      margin-bottom: 12px;
-    }
-    .header h1 {
-      font-size: 28px;
-      font-weight: 700;
-      color: #1c1c1e;
-      letter-spacing: -0.5px;
-    }
-    .header p {
-      margin-top: 6px;
-      font-size: 15px;
-      color: #6c6c70;
-    }
+    .header { text-align: center; margin-bottom: 48px; }
+    .header .trophy { font-size: 52px; line-height: 1; margin-bottom: 12px; }
+    .header h1 { font-size: 28px; font-weight: 700; color: #1c1c1e; letter-spacing: -0.5px; }
+    .header p  { margin-top: 6px; font-size: 15px; color: #6c6c70; }
 
     /* ── Turnier-Karten ── */
     .grid {
@@ -47,18 +31,22 @@
       flex-wrap: wrap;
       gap: 16px;
       justify-content: center;
-      max-width: 800px;
+      max-width: 860px;
       width: 100%;
     }
-
+    .card-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 220px;
+      max-width: 280px;
+      flex: 1 1 220px;
+    }
     .card {
       background: #ffffff;
       border-radius: 16px;
       box-shadow: 0 2px 12px rgba(0,0,0,.08);
       padding: 24px 32px;
-      min-width: 220px;
-      max-width: 280px;
-      flex: 1 1 220px;
       text-decoration: none;
       color: inherit;
       display: flex;
@@ -68,47 +56,94 @@
       border: 2px solid transparent;
       cursor: pointer;
     }
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 24px rgba(0,0,0,.12);
-    }
-    .card.aktiv {
-      border-color: #1a50a0;
-    }
-    .card .badge {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: #1a50a0;
-      margin-bottom: 2px;
-    }
-    .card .name {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1c1c1e;
-    }
-    .card .sub {
-      font-size: 12px;
-      color: #6c6c70;
-      line-height: 1.4;
-    }
-    .card .arrow {
-      margin-top: 14px;
-      font-size: 13px;
-      color: #1a50a0;
+    .card:hover  { transform: translateY(-3px); box-shadow: 0 6px 24px rgba(0,0,0,.12); }
+    .card.aktiv  { border-color: #1a50a0; }
+    .card .badge { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #1a50a0; margin-bottom: 2px; }
+    .card .name  { font-size: 20px; font-weight: 700; color: #1c1c1e; }
+    .card .sub   { font-size: 12px; color: #6c6c70; line-height: 1.4; }
+    .card .arrow { margin-top: 14px; font-size: 13px; color: #1a50a0; font-weight: 600; }
+
+    /* ── Update-Button ── */
+    .update-btn {
+      background: #1a50a0;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 0;
+      font-size: 14px;
       font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      width: 100%;
+      letter-spacing: -.2px;
+      transition: background .15s, transform .1s;
     }
+    .update-btn:hover  { background: #103a80; transform: translateY(-1px); }
+    .update-btn:active { transform: translateY(0); }
+
+    /* ── Update-Overlay ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px;
+      width: min(500px, 92vw);
+      max-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.28);
+    }
+    .modal-title  { font-size: 17px; font-weight: 700; color: #1c1c1e; }
+    .modal-status { font-size: 14px; color: #3a3a3c; display: flex; align-items: center; gap: 10px; min-height: 24px; }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid #e5e5ea;
+      border-top-color: #1a50a0;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-log {
+      background: #1c1c1e;
+      color: #d4d4d4;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-family: 'SF Mono', 'Menlo', 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.6;
+      overflow-y: auto;
+      max-height: 280px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .modal-close {
+      align-self: flex-end;
+      background: #f2f2f7;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      color: #1c1c1e;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .modal-close:hover    { background: #e5e5ea; }
+    .modal-close:disabled { opacity: .4; cursor: default; }
 
     /* ── Hinweis ── */
-    .hint {
-      margin-top: 40px;
-      font-size: 12px;
-      color: #aeaeb2;
-      text-align: center;
-      max-width: 400px;
-      line-height: 1.6;
-    }
+    .hint { margin-top: 40px; font-size: 12px; color: #aeaeb2; text-align: center; max-width: 400px; line-height: 1.6; }
   </style>
 </head>
 <body>
@@ -127,6 +162,20 @@
     Klick öffnet das Dashboard des jeweiligen Turniers.<br>
     Neue Turniere werden automatisch hinzugefügt.
   </p>
+
+  <!-- Update-Overlay -->
+  <div class="overlay" id="overlay" style="display:none"
+       onclick="if(event.target===this&&!_running)closeOverlay()">
+    <div class="modal">
+      <div class="modal-title">⟳ Aktualisierung</div>
+      <div class="modal-status">
+        <div class="spinner" id="spinner"></div>
+        <span id="status-text">Aktualisierung wird gestartet …</span>
+      </div>
+      <div class="modal-log" id="modal-log"></div>
+      <button class="modal-close" id="close-btn" onclick="closeOverlay()" disabled>Schliessen</button>
+    </div>
+  </div>
 
   <script>
 // ── Turnierliste – wird von wm_auto.py automatisch ergänzt ─────────
@@ -151,23 +200,109 @@ const TURNIERE = [
   }
 ];
 
+const SERVER   = 'http://localhost:7373';
+let _running   = false;
+let _pollTimer = null;
+
 // ── Karten rendern ──────────────────────────────────────────────────
 (function() {
-  const grid = document.getElementById('turnier-grid');
-  const sorted = TURNIERE.slice().reverse(); // neuestes zuerst
+  const grid   = document.getElementById('turnier-grid');
+  const sorted = TURNIERE.slice().reverse();
   sorted.forEach(t => {
+    const wrap = document.createElement('div');
+    wrap.className = 'card-wrap';
+
     const a = document.createElement('a');
-    a.href = t.datei;
+    a.href      = t.datei;
     a.className = 'card' + (t.aktiv ? ' aktiv' : '');
     a.innerHTML = `
       ${t.aktiv ? '<div class="badge">Aktuell</div>' : ''}
       <div class="name">${t.name}</div>
       ${t.sub ? `<div class="sub">${t.sub}</div>` : ''}
-      <div class="arrow">Rangliste öffnen →</div>
-    `;
-    grid.appendChild(a);
+      <div class="arrow">Rangliste öffnen →</div>`;
+    wrap.appendChild(a);
+
+    if (t.aktiv) {
+      const btn = document.createElement('button');
+      btn.className     = 'update-btn';
+      btn.id            = 'update-btn';
+      btn.textContent   = '⟳ Aktualisieren';
+      btn.style.display = 'none';
+      btn.onclick       = startUpdate;
+      wrap.appendChild(btn);
+    }
+
+    grid.appendChild(wrap);
   });
 })();
+
+// ── Server-Check beim Laden ─────────────────────────────────────────
+window.addEventListener('load', () => {
+  fetch(SERVER + '/status', { signal: AbortSignal.timeout(1500) })
+    .then(r => r.json())
+    .then(() => {
+      const btn = document.getElementById('update-btn');
+      if (btn) btn.style.display = '';
+    })
+    .catch(() => {});
+});
+
+// ── Update starten ──────────────────────────────────────────────────
+function startUpdate() {
+  document.getElementById('overlay').style.display   = 'flex';
+  document.getElementById('modal-log').textContent   = '';
+  document.getElementById('status-text').textContent = 'Aktualisierung wird gestartet …';
+  document.getElementById('spinner').style.display   = '';
+  document.getElementById('close-btn').disabled      = true;
+  _running = true;
+
+  fetch(SERVER + '/update', { method: 'POST' })
+    .then(r => r.json())
+    .then(() => _pollStatus())
+    .catch(() => {
+      document.getElementById('status-text').textContent =
+        '❌ Server nicht erreichbar – bitte Start Mac.command ausführen';
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('close-btn').disabled    = false;
+      _running = false;
+    });
+}
+
+function _pollStatus() {
+  _pollTimer = setInterval(() => {
+    fetch(SERVER + '/status')
+      .then(r => r.json())
+      .then(data => {
+        const log = document.getElementById('modal-log');
+        if (data.log && data.log.length) {
+          log.textContent = data.log.join('\n');
+          log.scrollTop   = log.scrollHeight;
+        }
+        if (data.running) {
+          document.getElementById('status-text').textContent = 'Aktualisierung läuft …';
+        } else {
+          clearInterval(_pollTimer);
+          _running = false;
+          document.getElementById('spinner').style.display = 'none';
+          document.getElementById('close-btn').disabled    = false;
+          if (data.error) {
+            document.getElementById('status-text').textContent = '❌ ' + data.error;
+          } else {
+            document.getElementById('status-text').textContent =
+              '✅ Fertig' + (data.last_update ? ' – ' + data.last_update : '');
+            setTimeout(() => location.reload(), 2000);
+          }
+        }
+      })
+      .catch(() => { clearInterval(_pollTimer); _running = false; });
+  }, 800);
+}
+
+function closeOverlay() {
+  if (_running) return;
+  clearInterval(_pollTimer);
+  document.getElementById('overlay').style.display = 'none';
+}
   </script>
 </body>
 </html>
