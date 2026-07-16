@@ -962,7 +962,7 @@ function prepareZusatz(){
           if(v===undefined||v===null){
             return `<span style="display:inline-block;min-width:${w}px"><span style="color:#555">—</span></span>`;
           }
-          const txt=typeof v==='string'?roundFrac(v):String(v);
+          const txt=(typeof v==='string'?roundFrac(v):String(v)).replace(/mehr als (\d+)/gi,'>$1');
           const inner=correct
             ?`<span style="background:#ffd60a;color:#000;border-radius:3px;padding:0 3px;font-weight:600">${txt}</span>`
             :`<span style="color:#000">${txt}</span>`;
