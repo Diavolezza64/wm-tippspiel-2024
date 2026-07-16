@@ -60,44 +60,11 @@ if [ -n "$BASE" ]; then
     echo ""
 fi
 
-# ── Update-Server einrichten (einmalig beim ersten Start) ──────
-PLIST="$HOME/Library/LaunchAgents/ch.tippspiel.server.plist"
+# ── Update-Server starten (falls noch nicht aktiv) ─────────────
 SERVER_PY="$DIR/tools/tippspiel_server.py"
-if [ ! -f "$PLIST" ] && [ -f "$SERVER_PY" ] && command -v python3 &>/dev/null; then
-    echo "→ Update-Server einrichten (einmalig) …"
-    PYTHON3_PATH="$(command -v python3)"
-    cat > "$PLIST" << PLIST_END
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>ch.tippspiel.server</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>${PYTHON3_PATH}</string>
-        <string>${SERVER_PY}</string>
-    </array>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>KeepAlive</key>
-    <true/>
-    <key>StandardOutPath</key>
-    <string>/tmp/tippspiel_server.log</string>
-    <key>StandardErrorPath</key>
-    <string>/tmp/tippspiel_server.log</string>
-</dict>
-</plist>
-PLIST_END
-    launchctl load "$PLIST" 2>/dev/null
-    sleep 1
-    echo "   ✅ Update-Server installiert – startet ab sofort beim Login automatisch"
-    echo ""
-fi
-
-# Server sofort starten falls noch nicht aktiv
 if [ -f "$SERVER_PY" ] && ! curl -sf --max-time 1 http://localhost:7373/status >/dev/null 2>&1; then
-    launchctl start ch.tippspiel.server 2>/dev/null || python3 "$SERVER_PY" &
+    nohup python3 "$SERVER_PY" > /tmp/tippspiel_server.log 2>&1 &
+    disown
     sleep 2
 fi
 
