@@ -750,7 +750,7 @@ function buildChart() {
     plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(255,255,255,0.97)',
       titleColor:'#1c1c1e',bodyColor:'#6c6c70',borderColor:'#d1d1d6',borderWidth:1,
       cornerRadius:8,
-      callbacks:{title:c=>c[0]?.label||'',label:c=>{const p=c.datasetIndex,g=c.dataIndex,bon=_showBonus?0:(typeof ZUSATZ_DATA!=='undefined'?(ZUSATZ_DATA[data.members[p]]?.punkte??0):0);return`  ${data.members[p]}: Rang ${c.raw}   (${data.points[p][g]-bon} Pkt. kum.)`;}}}
+      callbacks:{title:c=>c[0]?.label||'',label:c=>{const p=c.datasetIndex,g=c.dataIndex,bon=_showBonus?0:(typeof ZUSATZ_DATA!=='undefined'?(ZUSATZ_DATA[data.members[p]]?.punkte??0):0);return`  ${data.members[p]}: Rang ${c.raw}   (${data.points[p][g]-bon} Pkt. kum.)`;}}}}
   }});
   renderRvFilter();
   applyRvFilter();
