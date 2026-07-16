@@ -1,0 +1,3 @@
+# Satellite-Repos – eine Zeile pro Repo (Format: GitHub-User/Repo-Name)
+# Neuen Satellite hinzufügen: einfach eine Zeile ergänzen
+Diavolezza64/Fussball-Tippspiel-Daniel
