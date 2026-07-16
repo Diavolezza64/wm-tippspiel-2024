@@ -421,6 +421,24 @@ def debug_url(session, url):
 def save(members):
     out = [{'id': m['id'], 'name': m['name'], 'rank': i}
            for i, m in enumerate(members, 1)]
+
+    # Zusatzspieler aus data/zusatz_spieler.csv hinzufügen
+    zusatz_path = os.path.join(os.path.dirname(CONFIG_DIR), 'data', 'zusatz_spieler.csv')
+    existing_ids = {m['id'] for m in out}
+    zusatz_count = 0
+    if os.path.exists(zusatz_path):
+        import csv as _csv
+        with open(zusatz_path, encoding='utf-8') as f:
+            for row in _csv.DictReader(f):
+                eid   = row.get('id',   '').strip()
+                ename = row.get('name', '').strip()
+                if eid and ename and eid not in existing_ids:
+                    out.append({'id': eid, 'name': ename, 'rank': len(out) + 1})
+                    existing_ids.add(eid)
+                    zusatz_count += 1
+        if zusatz_count:
+            print(f'   + {zusatz_count} Zusatzspieler aus data/zusatz_spieler.csv hinzugefügt')
+
     with open(OUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
     print(f'✅  {len(out)} Teilnehmer → config/teilnehmer.json')

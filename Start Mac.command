@@ -14,10 +14,21 @@ echo "🏆 Fussball Tippspiel – Daten werden aktualisiert …"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# Auto-Update: neueste Code-Version laden (nur wenn config/update_source.txt vorhanden)
+# Auto-Update: neueste Code-Version laden
+FALLBACK_BASE="https://raw.githubusercontent.com/Diavolezza64/Fussball-Tippspiel-Beat/main"
 UPDATE_SRC="$DIR/config/update_source.txt"
+# URL validieren und reparieren falls nötig
 if [ -f "$UPDATE_SRC" ]; then
     BASE=$(tr -d '[:space:]' < "$UPDATE_SRC")
+    if [[ "$BASE" != https://* ]]; then
+        echo "   (update_source.txt ungültig – setze Standard-URL)"
+        echo "$FALLBACK_BASE" > "$UPDATE_SRC"
+        BASE="$FALLBACK_BASE"
+    fi
+else
+    BASE="$FALLBACK_BASE"
+fi
+if [ -n "$BASE" ]; then
     echo "→ Code-Update von GitHub …"
     TOOLS="wm_auto.py wm_chart.py gen_rangliste.py debug_zusatz.py fetch_em_archiv.py fetch_wm_archiv.py wm2026_squads.py"
     UPDATED=0
@@ -40,6 +51,23 @@ if [ -f "$UPDATE_SRC" ]; then
     else
         echo "   (offline oder keine Änderungen)"
     fi
+    echo ""
+fi
+
+# Mitgliederliste neu laden falls gruppen.txt oder zusatz_spieler.csv neuer als teilnehmer.json
+GRUPPEN="$DIR/config/gruppen.txt"
+TEILNEHMER="$DIR/config/teilnehmer.json"
+ZUSATZ="$DIR/data/zusatz_spieler.csv"
+RELOAD_MEMBERS=0
+if [ -f "$GRUPPEN" ] && { [ ! -f "$TEILNEHMER" ] || [ "$GRUPPEN" -nt "$TEILNEHMER" ]; }; then
+    RELOAD_MEMBERS=1
+fi
+if [ -f "$ZUSATZ" ] && [ -f "$TEILNEHMER" ] && [ "$ZUSATZ" -nt "$TEILNEHMER" ]; then
+    RELOAD_MEMBERS=1
+fi
+if [ $RELOAD_MEMBERS -eq 1 ]; then
+    echo "→ Mitgliederliste aktualisieren …"
+    python3 "$DIR/config/find_gruppe.py"
     echo ""
 fi
 
