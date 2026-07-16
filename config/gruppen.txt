@@ -1,5 +1,5 @@
 # Gruppen-ID von wmtippspiel.srf.ch
 # Zahl aus der URL: .../gruppe/12345
 
-46532
-#49605
+#46532
+49605
