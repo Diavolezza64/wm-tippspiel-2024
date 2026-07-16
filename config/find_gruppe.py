@@ -420,31 +420,59 @@ def debug_url(session, url):
 # ── Zusatzfragen-Antworten von SRF holen ─────────────────────────
 _ZUSATZ_FIELD_KEYS = ['wm', 'ch', 't_ch', 't_k', 'nullnull']
 
+def _parse_zusatz_from_html(html_text):
+    """Parst TextSelection-Antworten aus HTML. Gibt {key: answer} oder None zurück."""
+    from bs4 import BeautifulSoup as _BS
+    doc = _BS(html_text, 'html.parser')
+    bets = doc.find_all(attrs={'data-react-class': 'TextSelection'})
+    if not bets:
+        return None
+    answers = {}
+    for i, el in enumerate(bets):
+        bet = json.loads(el.get('data-react-props', '{}')).get('bet', {})
+        picks = bet.get('picks', [])
+        ans_map = {a['id']: a['name'] for a in bet.get('answers', [])}
+        answer = ans_map.get(picks[0]) if picks else None
+        key = _ZUSATZ_FIELD_KEYS[i] if i < len(_ZUSATZ_FIELD_KEYS) else f'q{i}'
+        answers[key] = answer
+    return answers if answers else None
+
+
 def fetch_zusatz_antworten(session, members):
     """Holt Zusatzfragen-Antworten von SRF (Runde 40) für alle Member.
-    Gibt {id: {wm, ch, t_ch, t_k, nullnull}} zurück."""
+    Gibt {id: {wm, ch, t_ch, t_k, nullnull}} zurück.
+
+    Sonderfall: wenn der eingeloggte User seine eigene Profilseite aufruft,
+    leitet SRF um (z.B. /mein-profil). In dem Fall wird /round/40 an die
+    Redirect-URL angehängt und ein zweiter Versuch gestartet.
+    """
     print('→ Zusatzfragen-Antworten von SRF laden …')
     result = {}
     for m in members:
         try:
             url = f'{BASE_URL}/users/{m["id"]}/round/40'
-            resp = session.get(url, timeout=20)
+            resp = session.get(url, timeout=20, allow_redirects=True)
+
             if resp.status_code != 200:
+                print(f'   ⚠️  {m["name"]}: HTTP {resp.status_code}')
                 continue
-            doc = BeautifulSoup(resp.text, 'html.parser')
-            bets = doc.find_all(attrs={'data-react-class': 'TextSelection'})
-            if not bets:
-                continue
-            answers = {}
-            for i, el in enumerate(bets):
-                bet = json.loads(el.get('data-react-props', '{}')).get('bet', {})
-                picks = bet.get('picks', [])
-                ans_map = {a['id']: a['name'] for a in bet.get('answers', [])}
-                answer = ans_map.get(picks[0]) if picks else None
-                key = _ZUSATZ_FIELD_KEYS[i] if i < len(_ZUSATZ_FIELD_KEYS) else f'q{i}'
-                answers[key] = answer
-            if answers:
+
+            answers = _parse_zusatz_from_html(resp.text)
+
+            # Redirect erkannt und keine Antworten → /round/40 an Redirect-URL hängen
+            if answers is None and resp.url != url:
+                redirect_base = resp.url.split('?')[0].rstrip('/')
+                if '/round/' not in redirect_base:
+                    alt_url = redirect_base + '/round/40'
+                    alt_resp = session.get(alt_url, timeout=20)
+                    if alt_resp.status_code == 200:
+                        answers = _parse_zusatz_from_html(alt_resp.text)
+
+            if answers is not None:
                 result[m['id']] = answers
+            else:
+                print(f'   ⚠️  {m["name"]}: Zusatzfragen nicht gefunden (URL: {resp.url})')
+
         except Exception as e:
             print(f'   ⚠️  {m["name"]}: {e}')
         time.sleep(0.1)

@@ -30,7 +30,7 @@ else
 fi
 if [ -n "$BASE" ]; then
     echo "→ Code-Update von GitHub …"
-    TOOLS="wm_auto.py wm_chart.py gen_rangliste.py debug_zusatz.py fetch_em_archiv.py fetch_wm_archiv.py wm2026_squads.py tippspiel_server.py"
+    TOOLS="wm_auto.py wm_chart.py gen_rangliste.py debug_zusatz.py fetch_em_archiv.py fetch_wm_archiv.py wm2026_squads.py"
     UPDATED=0
     for f in $TOOLS; do
         if curl -sf --max-time 15 "$BASE/tools/$f" -o "$DIR/tools/$f.tmp" 2>/dev/null; then
@@ -58,14 +58,6 @@ if [ -n "$BASE" ]; then
         echo "   (offline oder keine Änderungen)"
     fi
     echo ""
-fi
-
-# ── Update-Server starten (falls noch nicht aktiv) ─────────────
-SERVER_PY="$DIR/tools/tippspiel_server.py"
-if [ -f "$SERVER_PY" ] && ! curl -sf --max-time 1 http://localhost:7373/status >/dev/null 2>&1; then
-    nohup python3 "$SERVER_PY" > /tmp/tippspiel_server.log 2>&1 &
-    disown
-    sleep 2
 fi
 
 # Mitgliederliste neu laden falls gruppen.txt oder zusatz_spieler.csv neuer als teilnehmer.json
