@@ -224,6 +224,12 @@ const EMBEDDED_TIPPS = /*TIPPS_DATA*/[{"name": "Alessio C", "datum": "11.06.2026
     <div id="tab-punkte" class="tab-content" style="display:none!important"></div>
     <div id="tab-rangverl" class="tab-content" style="flex-direction:column">
       <div id="rv-filter-bar" style="display:flex;flex-wrap:wrap;gap:5px;padding:6px 8px 4px;flex-shrink:0;border-bottom:1px solid #e5e5ea;min-height:32px"></div>
+      <div id="rv-bonus-bar" style="display:flex;gap:4px;padding:4px 8px 3px;flex-shrink:0;border-bottom:1px solid #e5e5ea;align-items:center">
+        <span id="btn-mit-bonus" onclick="setBonusMode(true)"
+          style="cursor:pointer;font-size:11px;padding:2px 10px;border-radius:12px;border:1.5px solid #1a50a0;background:#1a50a0;color:#fff;font-weight:600;user-select:none;transition:all 0.15s">Mit Bonus</span>
+        <span id="btn-ohne-bonus" onclick="setBonusMode(false)"
+          style="cursor:pointer;font-size:11px;padding:2px 10px;border-radius:12px;border:1.5px solid #1a50a0;background:transparent;color:#1a50a0;font-weight:600;user-select:none;transition:all 0.15s">Ohne Bonus</span>
+      </div>
       <div style="position:relative;flex:1;min-height:0">
         <div id="hint-rangverl" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#aaa">Wird geladen…</div>
         <canvas id="myChart"></canvas>
@@ -287,6 +293,7 @@ const PALETTE = [
 let chart = null, freqChartInstance = null;
 let activePlayer = null, data = null, tipData = null;
 let _rvFilter = new Set();
+let _showBonus = true;
 let currentTab = 'rangliste';
 let freqSort = { col: 'tips', dir: -1 };   // -1 = desc
 let freqNormalize = false;
@@ -673,12 +680,46 @@ function applyRvFilter() {
   chart.update('none');
 }
 
+function setBonusMode(withBonus) {
+  _showBonus = withBonus;
+  const btnMit   = document.getElementById('btn-mit-bonus');
+  const btnOhne  = document.getElementById('btn-ohne-bonus');
+  if (btnMit && btnOhne) {
+    btnMit.style.background  = withBonus ? '#1a50a0' : 'transparent';
+    btnMit.style.color       = withBonus ? '#fff'    : '#1a50a0';
+    btnOhne.style.background = withBonus ? 'transparent' : '#1a50a0';
+    btnOhne.style.color      = withBonus ? '#1a50a0' : '#fff';
+  }
+  if (data) buildChart();
+}
+
+function getRanksForChart() {
+  if (_showBonus || typeof ZUSATZ_DATA === 'undefined') return data.ranks;
+  const {members, points} = data;
+  const G = points[0]?.length || 0;
+  // Bonus pro Spieler (0 wenn nicht vorhanden)
+  const bonus = members.map(name => (ZUSATZ_DATA[name]?.punkte ?? 0));
+  // Punkte ohne Bonus
+  const adjPoints = members.map((_, p) => points[p].map(pt => pt - bonus[p]));
+  // Rang neu berechnen pro Spiel
+  const adjRanks = members.map(() => new Array(G));
+  for (let g = 0; g < G; g++) {
+    const ptsG = members.map((_, p) => adjPoints[p][g]);
+    const sorted = [...ptsG].sort((a, b) => b - a);
+    for (let p = 0; p < members.length; p++) {
+      adjRanks[p][g] = sorted.indexOf(ptsG[p]) + 1;
+    }
+  }
+  return adjRanks;
+}
+
 function buildChart() {
   const {members,gameNums,gameDates,ranks,points}=data, N=members.length;
+  const chartRanks = getRanksForChart();
   const labels=gameNums.map((n,i)=>`Spiel ${n}\n${(gameDates[i]||'').slice(0,6)}`);
   const hidden=getHiddenPlayers();
   const datasets=members.map((name,p)=>({
-    label:name, data:ranks[p], borderColor:PALETTE[p], backgroundColor:PALETTE[p],
+    label:name, data:chartRanks[p], borderColor:PALETTE[p], backgroundColor:PALETTE[p],
     borderWidth:1.8, pointRadius:4, pointHoverRadius:7, tension:0, fill:false, order:N-p
   })).filter((_,p)=>!hidden.has(members[p]));
   if (chart) chart.destroy();
@@ -709,7 +750,7 @@ function buildChart() {
     plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(255,255,255,0.97)',
       titleColor:'#1c1c1e',bodyColor:'#6c6c70',borderColor:'#d1d1d6',borderWidth:1,
       cornerRadius:8,
-      callbacks:{title:c=>c[0]?.label||'',label:c=>`  ${data.members[c.datasetIndex]}: Rang ${c.raw}   (${data.points[c.datasetIndex][c.dataIndex]} Pkt. kum.)`}}}
+      callbacks:{title:c=>c[0]?.label||'',label:c=>{const p=c.datasetIndex,g=c.dataIndex,bon=_showBonus?0:(typeof ZUSATZ_DATA!=='undefined'?(ZUSATZ_DATA[data.members[p]]?.punkte??0):0);return`  ${data.members[p]}: Rang ${c.raw}   (${data.points[p][g]-bon} Pkt. kum.)`;}}}
   }});
   renderRvFilter();
   applyRvFilter();
@@ -717,12 +758,13 @@ function buildChart() {
 
 // ── Sidebar ───────────────────────────────────────────────────
 function buildSidebar() {
-  const {members,ranks}=data;
+  const {members}=data;
+  const chartRanks=getRanksForChart();
   const sorted=[...Array(members.length).keys()].sort((a,b)=>members[a].localeCompare(members[b]));
   const list=document.getElementById('player-list'); list.innerHTML='';
   for (const p of sorted){
     const div=document.createElement('div'); div.className='player-item'; div.dataset.idx=p;
-    const fr=ranks[p].length?ranks[p][ranks[p].length-1]:'?';
+    const fr=chartRanks[p].length?chartRanks[p][chartRanks[p].length-1]:'?';
     div.innerHTML=`<div class="color-swatch" style="background:${PALETTE[p]}"></div>
       <span class="player-name">${members[p]}</span><span class="player-rank">(${fr})</span>`;
     div.addEventListener('click',()=>toggleHighlight(p)); list.appendChild(div);
