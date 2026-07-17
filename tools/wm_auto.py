@@ -878,8 +878,111 @@ def fetch_torschuetzen():
         print(f'   ⚠️  fetch_torschuetzen Fehler: {e}')
         return [], ''
 
+# ── SRF-Gruppenleaderboard laden ─────────────────────────────
+def _parse_srf_user_entry(item):
+    """Extrahiert Name, Score und Rang aus einem SRF-Leaderboard-Eintrag."""
+    if not isinstance(item, dict):
+        return None
+    user = item.get('user') or item.get('bettor') or {}
+    if not isinstance(user, dict):
+        user = {}
+    name = (user.get('nickname') or user.get('username') or user.get('name') or
+            item.get('nickname') or item.get('username') or item.get('name') or '')
+    if not name or len(name) < 2:
+        return None
+    score = None
+    for k in ('total_score', 'score', 'points', 'totalScore', 'total'):
+        v = item.get(k)
+        if v is None:
+            v = user.get(k)
+        if isinstance(v, (int, float)):
+            score = int(v); break
+    rang = None
+    for k in ('rank', 'position', 'ranking', 'place', 'pos'):
+        v = item.get(k)
+        if isinstance(v, int):
+            rang = v; break
+    if name and score is not None:
+        return {'name': name, 'score': score, 'rank': rang}
+    return None
+
+def _parse_srf_lb_props(props, depth=0):
+    """Rekursiv Leaderboard-Einträge aus React-Props extrahieren."""
+    if depth > 6 or not isinstance(props, (dict, list)):
+        return []
+    if isinstance(props, dict):
+        for key in ('leaderboard', 'entries', 'rankers', 'rankings',
+                    'members', 'bettors', 'items', 'results', 'data'):
+            val = props.get(key)
+            if isinstance(val, list) and len(val) >= 3:
+                entries = [e for e in (_parse_srf_user_entry(x) for x in val) if e]
+                if len(entries) >= 3:
+                    return entries
+        for v in props.values():
+            if isinstance(v, (dict, list)):
+                r = _parse_srf_lb_props(v, depth+1)
+                if len(r) >= 3:
+                    return r
+    elif isinstance(props, list) and len(props) >= 3:
+        entries = [e for e in (_parse_srf_user_entry(x) for x in props) if e]
+        if len(entries) >= 3:
+            return entries
+        for item in props:
+            r = _parse_srf_lb_props(item, depth+1)
+            if len(r) >= 3:
+                return r
+    return []
+
+def fetch_srf_leaderboard(session):
+    """
+    Lädt das offizielle SRF-Gruppenleaderboard.
+    Gibt dict {name → {srf_punkte, srf_rang}} zurück.
+    """
+    from bs4 import BeautifulSoup
+    gruppen_txt = os.path.join(CONFIG_DIR, 'gruppen.txt')
+    group_ids = []
+    if os.path.exists(gruppen_txt):
+        with open(gruppen_txt, encoding='utf-8') as f:
+            for line in f:
+                line = line.split('#')[0].strip()
+                if line:
+                    group_ids.append(line)
+    if not group_ids:
+        print('   ⚠️  SRF-Leaderboard: keine Gruppen-IDs in gruppen.txt')
+        return {}
+    base_url = f'https://{TURNIER["srf_host"]}'
+    result = {}
+    for group_id in group_ids:
+        for prefix in ('leagues', 'ligen', 'communities', 'groups'):
+            url = f'{base_url}/{prefix}/{group_id}'
+            try:
+                resp = session.get(url, timeout=20)
+                if resp.status_code != 200:
+                    continue
+                doc = BeautifulSoup(resp.text, 'html.parser')
+                for el in doc.find_all(attrs={'data-react-class': True}):
+                    try:
+                        props = json.loads(el['data-react-props'])
+                        entries = _parse_srf_lb_props(props)
+                        if len(entries) >= 3:
+                            for pos, e in enumerate(entries, 1):
+                                result[e['name']] = {
+                                    'srf_punkte': e['score'],
+                                    'srf_rang':   e['rank'] if e['rank'] is not None else pos
+                                }
+                            if result:
+                                print(f'   ✅ SRF-Leaderboard: {len(result)} Einträge ({url})')
+                                return result
+                    except Exception:
+                        pass
+                time.sleep(0.2)
+            except Exception as e:
+                print(f'   ⚠️  SRF-Leaderboard {url}: {e}')
+    print('   ⚠️  SRF-Leaderboard: Daten nicht gefunden')
+    return {}
+
 # ── Daten in HTML einbetten ───────────────────────────────────
-def embed_in_html(rang_path, tipps_path, games_meta=None, zusatz_data=None):
+def embed_in_html(rang_path, tipps_path, games_meta=None, zusatz_data=None, srf_lb=None):
     html_path = os.path.join(WEB_DIR, TURNIER.get('html_datei', 'WM_Rangverlauf.html'))
     if not os.path.exists(html_path):
         print(f'⚠️  {os.path.basename(html_path)} nicht gefunden – HTML wird nicht aktualisiert.')
@@ -1023,6 +1126,13 @@ def embed_in_html(rang_path, tipps_path, games_meta=None, zusatz_data=None):
                   f'/*ZUSATZ_DATA_START*/var ZUSATZ_DATA={zusatz_js};/*ZUSATZ_DATA_END*/',
                   html, flags=re.DOTALL)
     print(f'   Zusatzfragen eingebettet: {len(zusatz_data or {})} Einträge')
+
+    # SRF-Leaderboard einbetten
+    srf_js = json.dumps(srf_lb or {}, ensure_ascii=False)
+    html = re.sub(r'/\*SRF_LB_START\*/.*?/\*SRF_LB_END\*/',
+                  f'/*SRF_LB_START*/var SRF_LEADERBOARD={srf_js};/*SRF_LB_END*/',
+                  html, flags=re.DOTALL)
+    print(f'   SRF-Leaderboard eingebettet: {len(srf_lb or {})} Einträge')
 
     # Torschützenliste einbetten (aus fussballdaten.de)
     # Sanity-Check: nur überschreiben wenn Top-Torschütze MEHR oder GLEICH Tore hat
@@ -1482,6 +1592,9 @@ def main():
     print('→ Zusatzfragen auswerten …')
     zusatz_data = calc_zusatz_punkte(games_meta)
 
+    print('→ SRF-Leaderboard laden …')
+    srf_lb = fetch_srf_leaderboard(session)
+
     print('→ CSVs schreiben …')
     rang_path  = os.path.join(DATA_DIR, f'{KUERZEL}_Rangverlauf_{today}.csv')
     tipps_path = os.path.join(DATA_DIR, f'{KUERZEL}_Tipps_{today}.csv')
@@ -1491,7 +1604,7 @@ def main():
     generate_pdf()
 
     print('→ HTML aktualisieren …')
-    embed_in_html(rang_path, tipps_path, games_meta, zusatz_data=zusatz_data)
+    embed_in_html(rang_path, tipps_path, games_meta, zusatz_data=zusatz_data, srf_lb=srf_lb)
 
     print('→ Rangliste PDF generieren …')
     gen_script = os.path.join(SCRIPT_DIR, 'tools', 'gen_rangliste.py')
