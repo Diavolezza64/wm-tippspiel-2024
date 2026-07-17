@@ -696,14 +696,35 @@ function setBonusMode(withBonus) {
   if (data) buildChart();
 }
 
+let _bonusIndices = null;
+function _computeBonusIndices() {
+  if (!data) return {chIdx: null, finaleIdx: null};
+  const chKw = ['schweiz', 'switzerland', 'suisse', 'svizzera'];
+  let chIdx = null, finaleIdx = null;
+  data.gameNames.forEach((n, i) => {
+    const nl = n.toLowerCase();
+    if (chKw.some(k => nl.includes(k))) chIdx = i;
+  });
+  if (typeof WM_FINALS_DATA !== 'undefined' && WM_FINALS_DATA.f && WM_FINALS_DATA.f[0]) {
+    const f = WM_FINALS_DATA.f[0];
+    if (f.r) {
+      const t1 = f.t1.toLowerCase(), t2 = f.t2.toLowerCase();
+      data.gameNames.forEach((n, i) => {
+        const nl = n.toLowerCase();
+        if (nl.includes(t1) && nl.includes(t2)) finaleIdx = i;
+      });
+    }
+  }
+  return {chIdx, finaleIdx};
+}
 function getBonusAt(p, g) {
-  // Gestaffelter Bonus aus rang_data (ab Schweiz-Ausscheidung / Finale)
-  const dec = data.bonusDecision;
-  const bd  = data.bonusBreakdown?.[data.members[p]] ?? {};
-  if (!dec) return 0;
+  if (!_bonusIndices) _bonusIndices = _computeBonusIndices();
+  const {chIdx, finaleIdx} = _bonusIndices;
+  const name = data.members[p];
+  const zd = (typeof ZUSATZ_DATA !== 'undefined' && ZUSATZ_DATA[name]) || {};
   let b = 0;
-  if (dec.chIdx != null && g >= dec.chIdx)     b += (bd.ch || 0) + (bd.t_ch || 0);
-  if (dec.finaleIdx != null && g >= dec.finaleIdx) b += (bd.wm || 0) + (bd.t_k || 0) + (bd.nullnull || 0);
+  if (chIdx != null && g >= chIdx)     b += (zd.p_ch || 0) + (zd.p_t_ch || 0);
+  if (finaleIdx != null && g >= finaleIdx) b += (zd.p_wm || 0) + (zd.p_t_k || 0) + (zd.p_nullnull || 0);
   return b;
 }
 
