@@ -2155,51 +2155,31 @@ function calcFrequenz(){
     return va!==vb ? matrixSort.dir*(va-vb) : a.localeCompare(b,'de');
   });
 
-  const CW=13;
-  const colgroup=`<col style="width:65px">`+matrixScores.map(()=>`<col style="width:${CW}px">`).join('')+`<col style="width:16px">`;
-
-  function matTh(label,col,align='right'){
-    const act=matrixSort.col===col;
-    const arr=act?(matrixSort.dir===-1?'↓':'↑'):'';
-    if(col!=='_name'&&col!=='_total'){
-      return `<th onclick="sortMatrix('${col}')" style="writing-mode:vertical-rl;height:44px;vertical-align:bottom;text-align:left;padding:0 1px 1px;color:#000;font-size:7px;font-weight:600;cursor:pointer;${act?'color:#1a50a0;':''}user-select:none">${label}${arr}</th>`;
-    }
-    return `<th onclick="sortMatrix('${col}')" style="text-align:${align};color:#000;font-size:8px;font-weight:600;padding:1px 1px;cursor:pointer;white-space:nowrap;${act?'border-bottom:2px solid #5a9aca;':''}user-select:none">${label}${arr}</th>`;
-  }
-
-  const hdrCells=matrixScores.map(s=>matTh(s,s)).join('');
-  let rightTableHtml=`<table class="ptable" id="freq-matrix-table" style="table-layout:fixed;font-size:8px"><colgroup>${colgroup}</colgroup>
-    <thead><tr>
-      ${matTh('Spieler','_name','left')}${hdrCells}${matTh('Σ','_total')}
-    </tr></thead><tbody>`;
-
-  members.forEach((nm,i)=>{
-    const pm=pMatrix[nm]||{};
-    const total=matrixScores.reduce((s,sc)=>s+(pm[sc]||0),0);
-    const bg=i%2===0?'background:#f7f7f9':'';
-    const cells=matrixScores.map(sc=>{
-      const v=pm[sc]||0;
-      return `<td style="text-align:right;padding:1px 1px;${v>0?'color:#1a5a9a':'color:#ddd'}">${v>0?v:''}</td>`;
-    }).join('');
-    rightTableHtml+=`<tr style="${bg}">
-      <td style="padding:1px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nm}</td>
-      ${cells}
-      <td style="text-align:right;color:#555;padding:1px 1px;font-weight:600">${total||''}</td>
-    </tr>`;
-  });
-  rightTableHtml+='</tbody></table>';
-
-  // Export buttons for matrix (functions defined globally)
-  const printBtn=`<button class="export-btn" style="float:none;margin-bottom:4px" onclick="exportMatrixPDF()">⬇ PDF</button>`;
-  const csvBtn=`<button class="export-btn" style="float:none;margin-bottom:4px" onclick="exportMatrixCSV()">⬇ CSV</button>`;
-
-  const rightHtml=`<div><div style="display:flex;gap:6px;margin-bottom:4px">${csvBtn}${printBtn}</div><div style="overflow-x:auto">${rightTableHtml}</div></div>`;
+  // ── Karten-Layout: eine Karte pro Score ─────────────────────
+  const cards=matrixScores.map(score=>{
+    const isResult=(gameResCount[score]||0)>0;
+    const playerList=members
+      .map(nm=>({nm,v:(pMatrix[nm]||{})[score]||0}))
+      .filter(({v})=>v>0)
+      .sort((a,b)=>b.v-a.v);
+    const playerRows=playerList.map(({nm,v})=>
+      `<div style="display:flex;justify-content:space-between;gap:6px;padding:1px 0;font-size:10px">
+        <span style="color:#3a3a3c;white-space:nowrap">${nm.split(' ')[0]}</span>
+        <span style="color:#1a5a9a;font-weight:600">${v}×</span>
+      </div>`
+    ).join('');
+    return `<div style="min-width:82px;border:1px solid ${isResult?'rgba(13,112,64,0.35)':'#e5e5ea'};border-radius:5px;padding:4px 7px;background:${isResult?'rgba(90,186,138,0.07)':'#fafafa'}">
+      <div style="font-weight:700;font-size:12px;color:${isResult?'#0d7040':'#1c1c1e'};border-bottom:1px solid #ebebeb;margin-bottom:3px;padding-bottom:2px;letter-spacing:.5px">${score}</div>
+      ${playerRows||'<div style="color:#ccc;font-size:9px">—</div>'}
+    </div>`;
+  }).join('');
+  const rightHtml=`<div style="display:flex;flex-wrap:wrap;gap:6px">${cards}</div>`;
 
   el.innerHTML=`<p style="font-size:10px;color:#555;padding:3px 0 7px">
     ${numGames} Spiel${numGames>1?'e':''} · ${rows.length} verschiedene Scores · ${totalTips} Tipps total</p>
-    <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
       ${leftHtml}
-      <div><div style="font-size:9px;color:#6c6c70;margin-bottom:3px">Score-Matrix (Scores mit ≥3 Tipps)</div><div style="overflow-x:auto">${rightHtml}</div></div>
+      <div><div style="font-size:9px;color:#6c6c70;margin-bottom:5px">Wer hat was getippt (Scores ≥3×)</div>${rightHtml}</div>
     </div>`;
 }
 
