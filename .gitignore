@@ -37,3 +37,4 @@ setup_github.command
 
 # Privater Ordner – bleibt lokal, nie auf GitHub
 new/
+privat/

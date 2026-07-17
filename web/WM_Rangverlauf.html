@@ -693,18 +693,28 @@ function setBonusMode(withBonus) {
   if (data) buildChart();
 }
 
+function getBonusAt(p, g) {
+  // Gestaffelter Bonus aus rang_data (ab Schweiz-Ausscheidung / Finale)
+  const dec = data.bonusDecision;
+  const bd  = data.bonusBreakdown?.[data.members[p]] ?? {};
+  if (!dec) return 0;
+  let b = 0;
+  if (dec.chIdx != null && g >= dec.chIdx)     b += (bd.ch || 0) + (bd.t_ch || 0);
+  if (dec.finaleIdx != null && g >= dec.finaleIdx) b += (bd.wm || 0) + (bd.t_k || 0) + (bd.nullnull || 0);
+  return b;
+}
+
 function getRanksForChart() {
-  if (_showBonus || typeof ZUSATZ_DATA === 'undefined') return data.ranks;
   const {members, points} = data;
   const G = points[0]?.length || 0;
-  // Bonus pro Spieler (0 wenn nicht vorhanden)
-  const bonus = members.map(name => (ZUSATZ_DATA[name]?.punkte ?? 0));
-  // Punkte ohne Bonus
-  const adjPoints = members.map((_, p) => points[p].map(pt => pt - bonus[p]));
+  // Punkte anpassen: Mit Bonus = wie im CSV; Ohne Bonus = gestaffelten Bonus abziehen
+  const adjPoints = members.map((_, p) =>
+    points[p].map((pt, g) => _showBonus ? pt : pt - getBonusAt(p, g))
+  );
   // Rang neu berechnen pro Spiel
   const adjRanks = members.map(() => new Array(G));
   for (let g = 0; g < G; g++) {
-    const ptsG = members.map((_, p) => adjPoints[p][g]);
+    const ptsG   = members.map((_, p) => adjPoints[p][g]);
     const sorted = [...ptsG].sort((a, b) => b - a);
     for (let p = 0; p < members.length; p++) {
       adjRanks[p][g] = sorted.indexOf(ptsG[p]) + 1;
@@ -750,7 +760,7 @@ function buildChart() {
     plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(255,255,255,0.97)',
       titleColor:'#1c1c1e',bodyColor:'#6c6c70',borderColor:'#d1d1d6',borderWidth:1,
       cornerRadius:8,
-      callbacks:{title:c=>c[0]?.label||'',label:c=>{const p=c.datasetIndex,g=c.dataIndex,bon=_showBonus?0:(typeof ZUSATZ_DATA!=='undefined'?(ZUSATZ_DATA[data.members[p]]?.punkte??0):0);return`  ${data.members[p]}: Rang ${c.raw}   (${data.points[p][g]-bon} Pkt. kum.)`;}}}}
+      callbacks:{title:c=>c[0]?.label||'',label:c=>{const p=c.datasetIndex,g=c.dataIndex,bon=_showBonus?0:getBonusAt(p,g);return`  ${data.members[p]}: Rang ${c.raw}   (${data.points[p][g]-bon} Pkt. kum.)`;}}}}
   }});
   renderRvFilter();
   applyRvFilter();

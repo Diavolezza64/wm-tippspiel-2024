@@ -377,19 +377,40 @@ def write_csvs(games_meta, player_data, today, zusatz_data=None):
         hdr2 += [m['name'] + ' Rang', m['name'] + ' Punkte kum.']
     rows2 = [hdr2]
 
-    cum_pts  = {m['id']: 0 for m in MEMBERS}
+    cum_pts    = {m['id']: 0 for m in MEMBERS}
     id_to_name = {m['id']: m['name'] for m in MEMBERS}
-    zus_pts = {m['id']: (zusatz_data or {}).get(id_to_name[m['id']], {}).get('punkte', 0) for m in MEMBERS}
+
+    # Bonus-Entscheidungs-Indizes: CH nach Schweiz-Ausscheidung, WM/etc. nach Finale
+    _CH_NAMES_LW = ['schweiz', 'switzerland', 'suisse', 'svizzera']
+    _finale_idx  = None
+    _ch_last_idx = None
+    for _idx, _g in enumerate(played_games):
+        if _normalize_runde(_g.get('roundName', '')) == 'finale':
+            _finale_idx = _idx
+        if any(n in _g['match'].lower() for n in _CH_NAMES_LW):
+            _ch_last_idx = _idx
+
+    def get_bonus_at_game(m_id, game_idx):
+        """Gestaffelter Bonus: CH-Bonus ab Schweiz' letztem Spiel, WM/Torsch./0:0 ab Finale."""
+        name = id_to_name[m_id]
+        zd   = (zusatz_data or {}).get(name, {})
+        b    = 0
+        if _ch_last_idx is not None and game_idx >= _ch_last_idx:
+            b += zd.get('p_ch', 0) + zd.get('p_t_ch', 0)
+        if _finale_idx is not None and game_idx >= _finale_idx:
+            b += zd.get('p_wm', 0) + zd.get('p_t_k', 0) + zd.get('p_nullnull', 0)
+        return b
+
     game_num = 0
-    for g in played_games:
+    for game_idx, g in enumerate(played_games):
         for m in MEMBERS:
             pd = player_data[m['id']].get(g['bet_id'])
             cum_pts[m['id']] += (pd['score'] if pd and pd['score'] is not None else 0)
 
-        sorted_m = sorted(MEMBERS, key=lambda m: cum_pts[m['id']] + zus_pts[m['id']], reverse=True)
+        sorted_m = sorted(MEMBERS, key=lambda m: cum_pts[m['id']] + get_bonus_at_game(m['id'], game_idx), reverse=True)
         ranks, prev_pts, prev_rank = {}, None, 0
         for i, m in enumerate(sorted_m):
-            total = cum_pts[m['id']] + zus_pts[m['id']]
+            total = cum_pts[m['id']] + get_bonus_at_game(m['id'], game_idx)
             if total != prev_pts:
                 prev_rank = i + 1
                 prev_pts  = total
@@ -399,7 +420,7 @@ def write_csvs(games_meta, player_data, today, zusatz_data=None):
         d   = datetime.fromisoformat(g['event_date'].replace('Z','+00:00'))
         row = [game_num, d.strftime('%d.%m.%Y'), g['match']]
         for m in MEMBERS:
-            row += [ranks[m['id']], cum_pts[m['id']] + zus_pts[m['id']]]
+            row += [ranks[m['id']], cum_pts[m['id']] + get_bonus_at_game(m['id'], game_idx)]
         rows2.append(row)
 
     def save_csv(rows, path):
@@ -914,11 +935,33 @@ def embed_in_html(rang_path, tipps_path, games_meta=None, zusatz_data=None):
     found = sum(1 for r in game_results if r)
     print(f'   Spielresultate: {found}/{len(game_results)} eingebettet')
 
+    # Bonus-Entscheidungs-Indizes + Aufschlüsselung für JS-seitige gestaffelte Berechnung
+    _CH_NAMES_LW2 = ['schweiz', 'switzerland', 'suisse', 'svizzera']
+    _sorted_played2 = sorted(
+        [g for g in (games_meta or {}).values() if g.get('final_results') and len(g['final_results']) >= 2],
+        key=lambda g: g['event_date']
+    )
+    _finale_game_idx2  = None
+    _ch_last_game_idx2 = None
+    for _idx2, _g2 in enumerate(_sorted_played2):
+        if _normalize_runde(_g2.get('roundName', '')) == 'finale':
+            _finale_game_idx2 = _idx2
+        if any(n in _g2['match'].lower() for n in _CH_NAMES_LW2):
+            _ch_last_game_idx2 = _idx2
+    _bonus_breakdown = {
+        name: {'ch': zd.get('p_ch', 0), 't_ch': zd.get('p_t_ch', 0),
+               'wm': zd.get('p_wm', 0), 't_k': zd.get('p_t_k', 0),
+               'nullnull': zd.get('p_nullnull', 0)}
+        for name, zd in (zusatz_data or {}).items()
+    }
+
     rang_data = json.dumps({
         'members': members, 'gameNums': game_nums,
         'gameDates': game_dates, 'gameNames': game_names,
         'gameResults': game_results,
-        'ranks': ranks, 'points': points
+        'ranks': ranks, 'points': points,
+        'bonusDecision': {'chIdx': _ch_last_game_idx2, 'finaleIdx': _finale_game_idx2},
+        'bonusBreakdown': _bonus_breakdown
     }, ensure_ascii=False)
 
     # In HTML einbetten
