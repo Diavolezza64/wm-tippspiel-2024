@@ -1,392 +1,44 @@
 [
   {
-    "id": "zb0xY",
-    "name": "Alessio C",
+    "id": "N9eBa",
+    "name": "Emanuel C",
     "rank": 1,
     "zusatz": {
       "wm": "Spanien",
       "ch": "Viertelfinal",
       "t_ch": "9",
-      "t_k": "7",
-      "nullnull": "5"
+      "t_k": "8",
+      "nullnull": "8"
     }
   },
   {
-    "id": "vEbqM",
-    "name": "Amapola M",
+    "id": "20zW9",
+    "name": "Fabrice E",
     "rank": 2,
     "zusatz": {
       "wm": "Spanien",
-      "ch": "Viertelfinal",
-      "t_ch": "9",
-      "t_k": "8",
-      "nullnull": "6"
+      "ch": "Achtelfinal",
+      "t_ch": "7",
+      "t_k": "6",
+      "nullnull": "12"
     }
   },
   {
-    "id": "XbPvY",
-    "name": "Beat N",
+    "id": "BLA3E",
+    "name": "Rafael C",
     "rank": 3,
     "zusatz": {
-      "wm": "Frankreich",
-      "ch": "Achtelfinal",
-      "t_ch": "8",
-      "t_k": "10",
-      "nullnull": "8"
-    }
-  },
-  {
-    "id": "JD4nY",
-    "name": "Ben H",
-    "rank": 4,
-    "zusatz": {
-      "wm": "Frankreich",
-      "ch": "Achtelfinal",
-      "t_ch": "8",
-      "t_k": "12",
-      "nullnull": "3"
-    }
-  },
-  {
-    "id": "6AwR0",
-    "name": "Blackbird Blackbird",
-    "rank": 5,
-    "zusatz": {
-      "wm": "Portugal",
-      "ch": "Viertelfinal",
-      "t_ch": "10",
-      "t_k": "10",
-      "nullnull": "4"
-    }
-  },
-  {
-    "id": "mD35l",
-    "name": "Breviceps Fuscus",
-    "rank": 6,
-    "zusatz": {
-      "wm": "England",
-      "ch": "Achtelfinal",
-      "t_ch": "10",
-      "t_k": "8",
-      "nullnull": "12"
-    }
-  },
-  {
-    "id": "wE8nj",
-    "name": "Danielle M",
-    "rank": 7,
-    "zusatz": {
-      "wm": "Frankreich",
-      "ch": "Achtelfinal",
-      "t_ch": "6",
-      "t_k": "11",
-      "nullnull": "10"
-    }
-  },
-  {
-    "id": "O6Rxv",
-    "name": "Elli G",
-    "rank": 8,
-    "zusatz": {
-      "wm": null,
-      "ch": null,
-      "t_ch": null,
-      "t_k": null,
-      "nullnull": null
-    }
-  },
-  {
-    "id": "xP70K",
-    "name": "Harry K",
-    "rank": 9,
-    "zusatz": {
-      "wm": null,
-      "ch": null,
-      "t_ch": null,
-      "t_k": null,
-      "nullnull": null
-    }
-  },
-  {
-    "id": "9MvGJ",
-    "name": "Isabella A",
-    "rank": 10,
-    "zusatz": {
-      "wm": "Deutschland",
-      "ch": "Viertelfinal",
-      "t_ch": "9",
-      "t_k": "8",
-      "nullnull": "5"
-    }
-  },
-  {
-    "id": "vDZM5",
-    "name": "jacqueline w",
-    "rank": 11,
-    "zusatz": {
       "wm": "Spanien",
-      "ch": "Achtelfinal",
-      "t_ch": "6",
-      "t_k": "4",
-      "nullnull": "4"
-    }
-  },
-  {
-    "id": "VbXEn",
-    "name": "Joe C",
-    "rank": 12,
-    "zusatz": {
-      "wm": "Argentinien",
-      "ch": "Sechzehntelfinal",
-      "t_ch": "2",
-      "t_k": "8",
-      "nullnull": "10"
-    }
-  },
-  {
-    "id": "l8De3",
-    "name": "Jothy S",
-    "rank": 13,
-    "zusatz": {
-      "wm": "Spanien",
-      "ch": "Achtelfinal",
-      "t_ch": "11",
-      "t_k": "6",
-      "nullnull": "9"
-    }
-  },
-  {
-    "id": "WDbOX",
-    "name": "Katja M",
-    "rank": 14,
-    "zusatz": {
-      "wm": "Argentinien",
-      "ch": "Viertelfinal",
-      "t_ch": "13",
-      "t_k": "9",
-      "nullnull": "9"
-    }
-  },
-  {
-    "id": "gABLK",
-    "name": "Laura S",
-    "rank": 15,
-    "zusatz": {
-      "wm": "Spanien",
-      "ch": "Viertelfinal",
-      "t_ch": "6",
-      "t_k": "8",
-      "nullnull": "7"
-    }
-  },
-  {
-    "id": "qlEAL",
-    "name": "Lisanne H",
-    "rank": 16,
-    "zusatz": {
-      "wm": "Niederlande",
-      "ch": "Achtelfinal",
-      "t_ch": "8",
-      "t_k": "9",
-      "nullnull": "8"
-    }
-  },
-  {
-    "id": "koqNW",
-    "name": "Major T",
-    "rank": 17,
-    "zusatz": {
-      "wm": "England",
-      "ch": "Achtelfinal",
-      "t_ch": "7",
-      "t_k": "4",
-      "nullnull": "5"
-    }
-  },
-  {
-    "id": "0zdG6",
-    "name": "Marc L",
-    "rank": 18,
-    "zusatz": {
-      "wm": "Spanien",
-      "ch": "Achtelfinal",
-      "t_ch": "8",
-      "t_k": "9",
-      "nullnull": "mehr als 15"
-    }
-  },
-  {
-    "id": "9x2EG",
-    "name": "Menusha G",
-    "rank": 19,
-    "zusatz": {
-      "wm": "Frankreich",
-      "ch": "Achtelfinal",
-      "t_ch": "4",
-      "t_k": "2",
-      "nullnull": "mehr als 15"
-    }
-  },
-  {
-    "id": "AOzeb",
-    "name": "Michael B",
-    "rank": 20,
-    "zusatz": {
-      "wm": "Frankreich",
-      "ch": "Achtelfinal",
-      "t_ch": "6",
-      "t_k": "9",
-      "nullnull": "12"
-    }
-  },
-  {
-    "id": "qb3g9",
-    "name": "Michael H",
-    "rank": 21,
-    "zusatz": {
-      "wm": "Spanien",
-      "ch": "Achtelfinal",
-      "t_ch": "6",
-      "t_k": "10",
-      "nullnull": "9"
-    }
-  },
-  {
-    "id": "AON3X",
-    "name": "Michèle F",
-    "rank": 22,
-    "zusatz": {
-      "wm": "Frankreich",
-      "ch": "Achtelfinal",
-      "t_ch": "10",
-      "t_k": "5",
-      "nullnull": "mehr als 15"
-    }
-  },
-  {
-    "id": "Rqabg",
-    "name": "Nick R",
-    "rank": 23,
-    "zusatz": {
-      "wm": "England",
-      "ch": "Viertelfinal",
-      "t_ch": "9",
-      "t_k": "7",
-      "nullnull": "7"
-    }
-  },
-  {
-    "id": "5Mq3g",
-    "name": "Nikolinho F",
-    "rank": 24,
-    "zusatz": {
-      "wm": "Portugal",
       "ch": "Achtelfinal",
       "t_ch": "7",
       "t_k": "8",
-      "nullnull": "8"
-    }
-  },
-  {
-    "id": "L9lYz",
-    "name": "Noelia O",
-    "rank": 25,
-    "zusatz": {
-      "wm": "Spanien",
-      "ch": "Achtelfinal",
-      "t_ch": "4",
-      "t_k": "7",
-      "nullnull": "8"
-    }
-  },
-  {
-    "id": "l0LPv",
-    "name": "Peternaldo dos Santos Aveiro",
-    "rank": 26,
-    "zusatz": {
-      "wm": "Portugal",
-      "ch": "Achtelfinal",
-      "t_ch": "9",
-      "t_k": "8",
-      "nullnull": "4"
-    }
-  },
-  {
-    "id": "zbxdY",
-    "name": "Plido Pao",
-    "rank": 27,
-    "zusatz": {
-      "wm": "Mexiko",
-      "ch": "Achtelfinal",
-      "t_ch": "5",
-      "t_k": "5",
-      "nullnull": "6"
-    }
-  },
-  {
-    "id": "a3nm",
-    "name": "Roger K",
-    "rank": 28,
-    "zusatz": {
-      "wm": "Schweiz",
-      "ch": "Final",
-      "t_ch": "13",
-      "t_k": "9",
-      "nullnull": "7"
-    }
-  },
-  {
-    "id": "AO7nM",
-    "name": "Rona K",
-    "rank": 29,
-    "zusatz": {
-      "wm": "Niederlande",
-      "ch": "Viertelfinal",
-      "t_ch": "8",
-      "t_k": "7",
-      "nullnull": "6"
-    }
-  },
-  {
-    "id": "R6MM0",
-    "name": "Schneckerl Prohaska",
-    "rank": 30,
-    "zusatz": {
-      "wm": "Frankreich",
-      "ch": "Achtelfinal",
-      "t_ch": "8",
-      "t_k": "7",
-      "nullnull": "11"
-    }
-  },
-  {
-    "id": "vEEEX",
-    "name": "Silke S",
-    "rank": 31,
-    "zusatz": {
-      "wm": "Spanien",
-      "ch": "Viertelfinal",
-      "t_ch": "6",
-      "t_k": "8",
-      "nullnull": "12"
-    }
-  },
-  {
-    "id": "rvvqd",
-    "name": "Valentin Bolt",
-    "rank": 32,
-    "zusatz": {
-      "wm": "England",
-      "ch": "Achtelfinal",
-      "t_ch": "8",
-      "t_k": "10",
-      "nullnull": "12"
+      "nullnull": "9"
     }
   },
   {
     "id": "oj5kA",
     "name": "Röle A",
-    "rank": 33,
+    "rank": 4,
     "zusatz": {
       "wm": "Frankreich",
       "ch": "Viertelfinal",
