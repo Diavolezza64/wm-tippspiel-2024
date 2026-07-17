@@ -2240,11 +2240,10 @@ function calcFrequenz(){
   // Hilfsfunktion: Treffer für einen Spalten-Score (exakt, kein Normalisieren)
   function hitCount(nm,sc){
     const ph=pHit[nm]||{};
-    // sc kann normalisiert sein (z.B. '1:2' steht für 1:2 und 2:1)
-    // Wir zählen exakte Treffer für sc selbst + gespiegelten Score
     const [a,b]=sc.split(':').map(Number);
     let c=(ph[sc]||0);
-    if(a!==b) c+=(ph[`${b}:${a}`]||0);
+    // Spiegel nur addieren wenn Normalisierung aktiv (sonst Doppelzählung)
+    if(freqNormalize&&a!==b) c+=(ph[`${b}:${a}`]||0);
     return c;
   }
   members.forEach((nm,i)=>{
