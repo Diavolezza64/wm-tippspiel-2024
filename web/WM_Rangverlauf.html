@@ -2130,7 +2130,7 @@ function calcFrequenz(){
     const h=parseInt(m[1]),a=parseInt(m[2]);
     return (h+a)*100+(99-h);
   }
-  const matrixScores=[...new Set(Object.keys(tipCount))].sort((a,b)=>scoreOrder(a)-scoreOrder(b));
+  const matrixScores=[...new Set(Object.keys(tipCount).filter(s=>tipCount[s]>=3))].sort((a,b)=>scoreOrder(a)-scoreOrder(b));
 
   const pMatrix={};
   if(data) data.members.filter(nm=>!isVirtHidden(nm)).forEach(nm=>{pMatrix[nm]={};});
@@ -2197,7 +2197,10 @@ function calcFrequenz(){
 
   el.innerHTML=`<p style="font-size:10px;color:#555;padding:3px 0 7px">
     ${numGames} Spiel${numGames>1?'e':''} · ${rows.length} verschiedene Scores · ${totalTips} Tipps total</p>
-    <div style="display:flex;gap:12px;align-items:flex-start">${leftHtml}${rightHtml}</div>`;
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${leftHtml}
+      <div><div style="font-size:9px;color:#6c6c70;margin-bottom:3px">Score-Matrix (Scores mit ≥3 Tipps)</div><div style="overflow-x:auto">${rightHtml}</div></div>
+    </div>`;
 }
 
 function sortFrequenz(col){
