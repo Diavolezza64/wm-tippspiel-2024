@@ -2124,13 +2124,14 @@ function calcFrequenz(){
   function matTh(label,col){
     const act=matrixSort.col===col;
     const arr=act?(matrixSort.dir===-1?' ↓':' ↑'):'';
-    const vStyle=col!=='_name'&&col!=='_total'?'writing-mode:vertical-rl;height:40px;vertical-align:bottom;padding:0 0 2px;':'padding:2px 4px;';
-    return `<th onclick="sortMatrix('${col}')" class="sortable${act?' sort-'+(matrixSort.dir===-1?'desc':'asc'):''}" style="cursor:pointer;${vStyle}font-size:8px;text-align:left">${label}${col==='_name'||col==='_total'?`<span class="sort-arrow"></span>`:arr}</th>`;
+    const isScore=col!=='_name'&&col!=='_total';
+    const style=isScore
+      ?'text-align:center;padding:1px 2px;font-size:8px;white-space:nowrap'
+      :'text-align:left;padding:2px 4px;font-size:8px';
+    return `<th onclick="sortMatrix('${col}')" class="sortable${act?' sort-'+(matrixSort.dir===-1?'desc':'asc'):''}" style="cursor:pointer;${style}">${label}${isScore?arr:`<span class="sort-arrow"></span>`}</th>`;
   }
-  const CW=12;
-  const colgroup=`<col style="width:70px">`+matrixScores.map(()=>`<col style="width:${CW}px">`).join('')+`<col style="width:20px">`;
   const hdrCells=matrixScores.map(s=>matTh(s,s)).join('');
-  let matHtml=`<table id="freq-matrix-table" class="ptable" style="table-layout:fixed;font-size:9px"><colgroup>${colgroup}</colgroup>
+  let matHtml=`<table id="freq-matrix-table" class="ptable" style="table-layout:auto;font-size:9px;white-space:nowrap">
     <thead><tr>
       ${matTh('Spieler','_name')}${hdrCells}${matTh('Σ','_total')}
     </tr></thead><tbody>`;
@@ -2140,12 +2141,12 @@ function calcFrequenz(){
     const bg=i%2===0?'background:#f7f7f9':'';
     const cells=matrixScores.map(sc=>{
       const v=pm[sc]||0;
-      return `<td style="text-align:center;padding:1px;color:${v>0?'#1a5a9a':'#ddd'}">${v>0?v:''}</td>`;
+      return `<td style="text-align:center;padding:1px 2px">${v>0?v:''}</td>`;
     }).join('');
     matHtml+=`<tr style="${bg}">
-      <td style="padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nm}</td>
+      <td style="padding:1px 4px;white-space:nowrap">${nm}</td>
       ${cells}
-      <td style="text-align:center;font-weight:600;color:#3a3a3c">${total||''}</td>
+      <td style="text-align:center;padding:1px 4px;font-weight:600">${total||''}</td>
     </tr>`;
   });
   matHtml+='</tbody></table>';
