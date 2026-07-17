@@ -957,9 +957,12 @@ def fetch_srf_leaderboard(session):
             url = f'{base_url}/{prefix}/{group_id}'
             try:
                 resp = session.get(url, timeout=20)
+                print(f'   [{resp.status_code}] {url}')
                 if resp.status_code != 200:
                     continue
                 doc = BeautifulSoup(resp.text, 'html.parser')
+                classes = [el.get('data-react-class') for el in doc.find_all(attrs={'data-react-class': True})]
+                print(f'   React-Klassen: {classes}')
                 for el in doc.find_all(attrs={'data-react-class': True}):
                     try:
                         props = json.loads(el['data-react-props'])
