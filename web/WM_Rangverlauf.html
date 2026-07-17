@@ -973,7 +973,7 @@ function wideColsGF(hasZusatz, extBonusCols){
     <th colspan="2" style="border:none;padding:0"></th>
     <th colspan="5" style="text-align:center;font-size:8.5px;color:#000;border-bottom:1px solid rgba(0,0,0,0.15);padding:2px 0">Gruppenphase</th>
     <th colspan="10" style="text-align:center;font-size:8.5px;color:#000;border-bottom:1px solid rgba(0,0,0,0.15);border-left:1px solid rgba(0,0,0,0.15);padding:2px 0">Finalspiele</th>
-    ${hasZusatz?'<th colspan="3" style="text-align:center;font-size:8.5px;color:#000;border-left:1px solid rgba(0,0,0,0.15);border-bottom:1px solid rgba(0,0,0,0.15);padding:2px 0">Bonus</th>':''}
+    ${(extBonusCols&&extBonusCols.length>0)?`<th colspan="${extBonusCols.length}" style="text-align:center;font-size:8.5px;color:#000;border-left:1px solid rgba(0,0,0,0.15);border-bottom:1px solid rgba(0,0,0,0.15);padding:2px 0">Bonus</th>`:(hasZusatz?'<th colspan="3" style="text-align:center;font-size:8.5px;color:#000;border-left:1px solid rgba(0,0,0,0.15);border-bottom:1px solid rgba(0,0,0,0.15);padding:2px 0">Bonus</th>':"")}
     <th style="border-left:1px solid rgba(0,0,0,0.15);border-bottom:none;padding:0"></th>
   </tr>`;
   return {cols,groupHdr};
@@ -993,45 +993,41 @@ function prepareZusatz(){
         const v=zusatz[nm]?.[k];
         if(v!=null){const d=typeof v==='string'?roundFrac(v):String(v);maxLen=Math.max(maxLen,d.length);}
       });
-      keyW[k]=Math.max(16,maxLen*6+6);
+      keyW[k]=Math.max(24,maxLen*7+6);
     });
-    // Bump keyW to at least the rendered pixel width of the emoji header
-    function emojiW(str){try{const c=document.createElement('canvas');const ctx=c.getContext('2d');ctx.font='15px sans-serif';return Math.ceil(ctx.measureText(str).width)+8;}catch(e){return 36;}}
-    zusatzKeys.forEach((k,i)=>{if(i<ZUS_LABELS.length) keyW[k]=Math.max(keyW[k],emojiW(ZUS_LABELS[i]));});
   }
   function playerZus(name){
     const zus=hasZusatz?(zusatz[name]?.punkte??0):0;
-    const zusText=(hasZusatz&&zusatz[name]&&zusatzKeys.length>0)
-      ?zusatzKeys.map(k=>{
-          const v=zusatz[name][k];const w=keyW[k]||40;
-          const pts=zusatz[name]?.['p_'+k]??0;
-          const correct=pts>0;
-          if(v===undefined||v===null){
-            return `<span style="display:inline-block;min-width:${w}px"><span style="color:#555">—</span></span>`;
-          }
+    const perKey={};
+    if(hasZusatz&&zusatz[name]&&zusatzKeys.length>0){
+      zusatzKeys.forEach(k=>{
+        const v=zusatz[name][k];
+        const pts=zusatz[name]?.['p_'+k]??0;
+        const correct=pts>0;
+        if(v===undefined||v===null){
+          perKey['_zus_'+k]=`<span style="color:#bbb">—</span>`;
+        }else{
           const txt=(typeof v==='string'?roundFrac(v):String(v)).replace(/mehr als (\d+)/gi,'>$1');
-          const inner=correct
+          perKey['_zus_'+k]=correct
             ?`<span style="background:#ffd60a;color:#000;border-radius:3px;padding:0 3px;font-weight:600">${txt}</span>`
-            :`<span style="color:#000">${txt}</span>`;
-          return `<span style="display:inline-block;min-width:${w}px">${inner}</span>`;
-        }).join('<span style="color:#636366;margin:0 2px">;</span>'):'';
-    const zusP='';
-    return{zus,zusText,zusP};
+            :`<span style="color:#3a3a3c">${txt}</span>`;
+        }
+      });
+    }
+    return{zus,...perKey};
   }
   const legend='';
-  // Emoji column header spanning each key cell (aligns with data cells)
-  const zusHdr=(hasZusatz&&zusatzKeys.length>0)
-    ?zusatzKeys.slice(0,ZUS_LABELS.length).map((k,i)=>
-      `<span style="display:inline-block;min-width:${keyW[k]||30}px;text-align:center;font-size:15px">${ZUS_LABELS[i]||k}</span>`
-    ).join('<span style="color:#636366;margin:0 2px">;</span>')
-    :'';
-  // Bonus cols + groupHdr snippet for tables with 1 GS col (×2, +10)
+  // One column per bonus key, emoji as header
   const bonusCols=hasZusatz?[
-    {lbl:zusHdr,col:'zusText',w:200,sep:true,raw:true,align:'left'},
-    {lbl:'∑',   col:'zus',   w:28, sub:true},
+    ...zusatzKeys.slice(0,ZUS_LABELS.length).map((k,i)=>({
+      lbl:`<span style="font-size:12px">${ZUS_LABELS[i]||k}</span>`,
+      col:'_zus_'+k, w:keyW[k]||30, sep:i===0, raw:true, align:'center'
+    })),
+    {lbl:'∑', col:'zus', w:28, sub:true},
   ]:[];
+  const nBonusCols=zusatzKeys.slice(0,ZUS_LABELS.length).length;
   const bonusGrpTh=hasZusatz
-    ?'<th colspan="3" style="text-align:center;font-size:8.5px;color:#000;border-left:1px solid rgba(0,0,0,0.15);border-bottom:1px solid rgba(0,0,0,0.15);padding:2px 0">Bonus</th>':'';
+    ?`<th colspan="${nBonusCols+1}" style="text-align:center;font-size:8.5px;color:#000;border-left:1px solid rgba(0,0,0,0.15);border-bottom:1px solid rgba(0,0,0,0.15);padding:2px 0">Bonus</th>`:'';
   return{zusatz,hasZusatz,zusatzKeys,keyW,ZUS_LABELS,playerZus,legend,bonusCols,bonusGrpTh};
 }
 
@@ -1086,10 +1082,10 @@ function calcRanking(){
     const v2 = sf?phPts(p,sf.fi,sf.ti)  :0;
     const v1 = ff?phPts(p,ff.fi,ff.ti)  :0;
     const fstot=v16+v8+v4+v2+v1;
-    const {zus,zusText,zusP}=playerZus(name);
+    const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,
       v16,c16:gstot+v16,v8,c8:gstot+v16+v8,v4,c4:gstot+v16+v8+v4,
-      v2,c2:gstot+v16+v8+v4+v2,v1,fstot,zus,tot:gstot+fstot+zus,zusText,zusP};
+      v2,c2:gstot+v16+v8+v4+v2,v1,fstot,tot:gstot+fstot+zus,...zusR};
   });
   const {cols,groupHdr}=wideColsGF(hasZusatz,bonusCols);
   el.innerHTML=zusLegend+buildWideTable(players,uebSort,'sortUeb',cols,groupHdr);
@@ -1512,7 +1508,7 @@ function calc10Punkte(){
     const v16=r32?phPts(p,r32.fi,r32.ti):0,v8=r16?phPts(p,r16.fi,r16.ti):0,
           v4=qf?phPts(p,qf.fi,qf.ti):0,v2=sf?phPts(p,sf.fi,sf.ti):0,v1=ff?phPts(p,ff.fi,ff.ti):0;
     const fstot=v16+v8+v4+v2+v1;
-    const {zus,zusText,zusP}=playerZus(name);
+    const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,v16,c16:gstot+v16,v8,c8:gstot+v16+v8,
       v4,c4:gstot+v16+v8+v4,v2,c2:gstot+v16+v8+v4+v2,v1,fstot,zus,tot:gstot+fstot+zus,zusText,zusP};
   });
@@ -1544,10 +1540,10 @@ function calc10Plus(){
     const gs=phPts(p,0,gsEnd);
     const v16=r32?phPts(p,r32.fi,r32.ti):0,v8=r16?phPts(p,r16.fi,r16.ti):0,
           v4=qf?phPts(p,qf.fi,qf.ti):0,v2=sf?phPts(p,sf.fi,sf.ti):0,v1=ff?phPts(p,ff.fi,ff.ti):0;
-    const {zus,zusText,zusP}=playerZus(name);
+    const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],gs,
       v16,c16:gs+v16,v8,c8:gs+v16+v8,v4,c4:gs+v16+v8+v4,
-      v2,c2:gs+v16+v8+v4+v2,v1,zus,tot:gs+v16+v8+v4+v2+v1+zus,zusText,zusP};
+      v2,c2:gs+v16+v8+v4+v2,v1,tot:gs+v16+v8+v4+v2+v1+zus,...zusR};
   });
 
   const legend=`<div style="font-size:10.5px;color:#3a3a3c;margin:4px 0 4px;line-height:1.8">GS max <b style="color:#000">10</b> · 1/16 max <b style="color:#000">20</b> · 1/8 max <b style="color:#000">30</b> · 1/4 max <b style="color:#000">40</b> · 1/2 max <b style="color:#000">50</b> · Final max <b style="color:#000">60</b></div>`;
@@ -1598,10 +1594,10 @@ function calcX2(){
     const v16=r32?phPts(p,r32.fi,r32.ti):0, v8=r16?phPts(p,r16.fi,r16.ti):0,
           v4=qf?phPts(p,qf.fi,qf.ti):0,     v2=sf?phPts(p,sf.fi,sf.ti):0,
           v1=ff?phPts(p,ff.fi,ff.ti):0;
-    const {zus,zusText,zusP}=playerZus(name);
+    const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],gs,
       v16,c16:gs+v16,v8,c8:gs+v16+v8,v4,c4:gs+v16+v8+v4,
-      v2,c2:gs+v16+v8+v4+v2,v1,zus,tot:gs+v16+v8+v4+v2+v1+zus,zusText,zusP};
+      v2,c2:gs+v16+v8+v4+v2,v1,tot:gs+v16+v8+v4+v2+v1+zus,...zusR};
   });
   const legend=`<div style="font-size:10.5px;color:#3a3a3c;margin:4px 0 4px;line-height:1.8">GS ×<b style="color:#000">1</b> · 1/16 ×<b style="color:#000">2</b> · 1/8 ×<b style="color:#000">4</b> · 1/4 ×<b style="color:#000">8</b> · 1/2 ×<b style="color:#000">16</b> · Final ×<b style="color:#000">32</b></div>`;
   const cols=[
@@ -1692,10 +1688,10 @@ function calcPeter(){
     const v2 = sf?phPts(p,sf.fi,sf.ti)  :0;
     const v1 = ff?phPts(p,ff.fi,ff.ti)  :0;
     const fstot=v16+v8+v4+v2+v1;
-    const {zus,zusText,zusP}=playerZus(name);
+    const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,
       v16,c16:gstot+v16,v8,c8:gstot+v16+v8,v4,c4:gstot+v16+v8+v4,
-      v2,c2:gstot+v16+v8+v4+v2,v1,fstot,zus,tot:gstot+fstot+zus,zusText,zusP};
+      v2,c2:gstot+v16+v8+v4+v2,v1,fstot,tot:gstot+fstot+zus,...zusR};
   });
 
   const {cols,groupHdr}=wideColsGF(hasZusatz,bonusCols);
@@ -1765,10 +1761,10 @@ function calcFair(){
     const v2 = sf?phPts(p,sf.fi,sf.ti)  :0;
     const v1 = ff?phPts(p,ff.fi,ff.ti)  :0;
     const fstot=v16+v8+v4+v2+v1;
-    const {zus,zusText,zusP}=playerZus(name);
+    const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,
       v16,c16:gstot+v16,v8,c8:gstot+v16+v8,v4,c4:gstot+v16+v8+v4,
-      v2,c2:gstot+v16+v8+v4+v2,v1,fstot,zus,tot:gstot+fstot+zus,zusText,zusP};
+      v2,c2:gstot+v16+v8+v4+v2,v1,fstot,tot:gstot+fstot+zus,...zusR};
   });
 
   const {cols,groupHdr}=wideColsGF(hasZusatz,bonusCols);
