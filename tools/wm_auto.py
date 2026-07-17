@@ -952,40 +952,34 @@ def fetch_srf_leaderboard(session):
         return {}
     base_url = f'https://{TURNIER["srf_host"]}'
     result = {}
-    print(f'   Debug – Gruppen: {group_ids}, Host: {base_url}')
-    for group_id in group_ids:
-        for prefix in ('communities', 'leagues', 'ligen', 'groups'):
-            url = f'{base_url}/{prefix}/{group_id}'
-            try:
-                resp = session.get(url, timeout=20)
-                print(f'   [{resp.status_code}] {url}')
-                if resp.status_code != 200:
-                    continue
-                doc = BeautifulSoup(resp.text, 'html.parser')
-                classes = [el.get('data-react-class') for el in doc.find_all(attrs={'data-react-class': True})]
-                print(f'   React-Klassen: {classes}')
-                for el in doc.find_all(attrs={'data-react-class': True}):
-                    try:
-                        props = json.loads(el['data-react-props'])
-                        top_keys = list(props.keys())[:12] if isinstance(props, dict) else []
-                        print(f'   [{el.get("data-react-class")}] keys: {top_keys}')
-                        entries = _parse_srf_lb_props(props)
-                        if len(entries) >= 3:
-                            for pos, e in enumerate(entries, 1):
-                                result[e['name']] = {
-                                    'srf_punkte': e['score'],
-                                    'srf_rang':   e['rank'] if e['rank'] is not None else pos
-                                }
-                            if result:
-                                print(f'   ✅ SRF-Leaderboard: {len(result)} Einträge ({url})')
-                                return result
-                    except Exception as ex:
-                        print(f'   parse-ex: {ex}')
-                time.sleep(0.2)
-            except Exception as e:
-                print(f'   ⚠️  {url}: {e}')
-    print('   ⚠️  SRF-Leaderboard: Daten nicht gefunden')
-    return {}
+    import re as _re
+    import requests as _req
+    for m in MEMBERS:
+        mid  = m.get('id', '')
+        name = m.get('name', '')
+        if not mid or not name:
+            continue
+        url = f'{base_url}/users/{mid}'
+        try:
+            resp = session.get(url, timeout=20, allow_redirects=True)
+            html = resp.text
+            # Falls redirect auf eigenes Profil → anonym abrufen
+            if resp.url != url:
+                html = _req.get(url, timeout=20,
+                                headers={'User-Agent': 'Mozilla/5.0'}).text
+            # Gesamt-Rang: suche "Gesamt" ... "Rang" ... #NNN
+            mt = _re.search(r'Gesamt.{0,400}?<strong>Rang</strong>.{0,80}?#(\d+)',
+                            html, _re.DOTALL)
+            if mt:
+                result[name] = {'srf_rang': int(mt.group(1)), 'srf_punkte': 0}
+        except Exception as ex:
+            print(f'   ⚠️  {name} ({mid}): {ex}')
+        time.sleep(0.1)
+    if result:
+        print(f'   ✅ SRF-Ränge geladen: {len(result)} Spieler')
+    else:
+        print('   ⚠️  SRF-Ränge nicht gefunden')
+    return result
 
 # ── Daten in HTML einbetten ───────────────────────────────────
 def embed_in_html(rang_path, tipps_path, games_meta=None, zusatz_data=None, srf_lb=None):
