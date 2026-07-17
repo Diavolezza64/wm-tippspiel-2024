@@ -1510,7 +1510,7 @@ function calc10Punkte(){
     const fstot=v16+v8+v4+v2+v1;
     const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,v16,c16:gstot+v16,v8,c8:gstot+v16+v8,
-      v4,c4:gstot+v16+v8+v4,v2,c2:gstot+v16+v8+v4+v2,v1,fstot,zus,tot:gstot+fstot+zus,zusText,zusP};
+      v4,c4:gstot+v16+v8+v4,v2,c2:gstot+v16+v8+v4+v2,v1,fstot,tot:gstot+fstot+zus,...zusR};
   });
   const {cols,groupHdr}=wideColsGF(hasZusatz,bonusCols);
   el.innerHTML=`<p style="font-size:10.5px;color:#3a3a3c;margin:4px 0 4px">Finalspiele ÷ 2 — max. 10 Punkte pro Spiel</p>`+zusLegend+
