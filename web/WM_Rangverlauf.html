@@ -2004,18 +2004,19 @@ function calcResultate(){
   data.gameNames.forEach((n,i)=>{if(data.gameResults&&data.gameResults[i])gameResultByName[n]=data.gameResults[i];});
 
   const ordered=[...data.gameNames.slice(fi,ti+1)].reverse().filter(g=>byGame[g]);
-  let html='<table class="ptable"><thead><tr><th>Tipp</th><th style="white-space:nowrap">Anzahl %</th><th>Spieler</th></tr></thead><tbody>';
+  let html='<table class="ptable" style="table-layout:fixed;width:100%"><colgroup><col style="width:46px"><col style="width:60px"><col style="width:38px"><col></colgroup><thead><tr><th>Tipp</th><th>Anzahl</th><th>%</th><th>Spieler</th></tr></thead><tbody>';
   for(const game of ordered){
     const tips=Object.entries(byGame[game]).map(([tipp,names])=>({tipp,count:names.length,names})).sort((a,b)=>b.count-a.count);
     const total=tips.reduce((s,t)=>s+t.count,0)||1;
     const res=gameResultByName[game];
-    html+=`<tr class="game-header"><td colspan="3">${game}${res?` <span style="color:#0d7040;font-weight:normal;margin-left:6px">: ${res}</span>`:''}  </td></tr>`;
+    html+=`<tr class="game-header"><td colspan="4">${game}${res?` <span style="color:#0d7040;font-weight:normal;margin-left:6px">: ${res}</span>`:''}  </td></tr>`;
     for(const t of tips){
       const pct=Math.round(t.count/total*100);
       const isCorrect=res&&t.tipp===res;
       html+=`<tr style="${isCorrect?'background:rgba(90,186,138,0.12);outline:1px solid rgba(90,186,138,0.35);':''}">
         <td style="color:${isCorrect?'#0d7040':'#3a3a3c'}">${t.tipp}${isCorrect?' ✓':''}</td>
-        <td style="white-space:nowrap;color:#3a3a3c;font-size:11px">${t.count}/${total} &nbsp;${pct}%</td>
+        <td style="color:#3a3a3c;font-size:11px">${t.count}/${total}</td>
+        <td style="color:#3a3a3c;font-size:11px">${pct}%</td>
         <td style="font-size:10px">${t.names.join(', ')}</td></tr>`;
     }
   }
