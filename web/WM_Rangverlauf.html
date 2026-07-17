@@ -2158,6 +2158,7 @@ function calcFrequenz(){
   members.forEach((nm,i)=>{
     const pm=pMatrix[nm]||{};
     const total=matrixScores.reduce((s,sc)=>s+(pm[sc]||0),0);
+    const totalHit=matrixScores.reduce((s,sc)=>s+hitCount(nm,sc),0);
     const rowBg=i%2===0?'background:#f4f4f8':'';
     const cells=matrixScores.map(sc=>{
       const v=pm[sc]||0;
@@ -2165,10 +2166,11 @@ function calcFrequenz(){
       const txt=v>0?(h>0?`${v}<span style="color:#c0392b;font-size:7px">(${h})</span>`:`${v}`):'';
       return `<td style="text-align:center;padding:0 3px;border-right:${BORDER}">${txt}</td>`;
     }).join('');
+    const totalTxt=total?(totalHit>0?`${total}<span style="color:#c0392b;font-size:7px">(${totalHit})</span>`:`${total}`):'';
     matHtml+=`<tr style="${rowBg}">
       <td style="padding:0 6px 0 2px;white-space:nowrap;border-right:${BORDER}">${nm}</td>
       ${cells}
-      <td style="text-align:center;padding:0 4px;font-weight:600">${total||''}</td>
+      <td style="text-align:center;padding:0 4px;font-weight:600">${totalTxt}</td>
     </tr>`;
   });
   matHtml+='</tbody></table>';
