@@ -1060,12 +1060,13 @@ function prepareZusatz(){
   }
   const legend='';
   // One column per bonus key, emoji as header
+  const eqW=Math.max(28,...zusatzKeys.slice(1,ZUS_LABELS.length).map(k=>keyW[k]||30));
   const bonusCols=hasZusatz?[
     ...zusatzKeys.slice(0,ZUS_LABELS.length).map((k,i)=>({
       lbl:`<span style="font-size:12px">${ZUS_LABELS[i]||k}</span>`,
-      col:'_zus_'+k, w:keyW[k]||30, sep:i===0, raw:true, align:'center'
+      col:'_zus_'+k, w:i===0?(keyW[k]||30):eqW, sep:i===0, raw:true, align:i===0?'left':'center'
     })),
-    {lbl:'∑', col:'zus', w:28, sub:true},
+    {lbl:'∑', col:'zus', w:eqW, sub:true},
   ]:[];
   const nBonusCols=zusatzKeys.slice(0,ZUS_LABELS.length).length;
   const bonusGrpTh=hasZusatz
