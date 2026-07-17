@@ -2162,7 +2162,7 @@ function calcFrequenz(){
     const cells=matrixScores.map(sc=>{
       const v=pm[sc]||0;
       const h=v>0?hitCount(nm,sc):0;
-      const txt=v>0?(h>0?`${v}<span style="color:#888;font-size:7px">(${h})</span>`:`${v}`):'';
+      const txt=v>0?(h>0?`${v}<span style="color:#c0392b;font-size:7px">(${h})</span>`:`${v}`):'';
       return `<td style="text-align:center;padding:0 3px;border-right:${BORDER}">${txt}</td>`;
     }).join('');
     matHtml+=`<tr style="${rowBg}">
@@ -2173,8 +2173,9 @@ function calcFrequenz(){
   });
   matHtml+='</tbody></table>';
 
-  el.innerHTML=`<p style="font-size:10px;color:#555;padding:3px 0 7px">
+  el.innerHTML=`<p style="font-size:10px;color:#555;padding:3px 0 4px">
     ${numGames} Spiel${numGames>1?'e':''} · ${rows.length} verschiedene Scores · ${totalTips} Tipps total</p>
+    <p style="font-size:9px;color:#888;padding:0 0 6px">Anzahl wie oft der Tipp abgegeben wurde · <span style="color:#c0392b">rote Zahl in Klammern</span> = wie oft der Tipp exakt eingetroffen ist</p>
     <div style="overflow-x:auto;display:inline-block;max-width:100%">${matHtml}</div>`;
 }
 
