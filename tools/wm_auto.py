@@ -967,11 +967,11 @@ def fetch_srf_leaderboard(session):
             if resp.url != url:
                 html = _req.get(url, timeout=20,
                                 headers={'User-Agent': 'Mozilla/5.0'}).text
-            # Gesamt-Rang: suche "Gesamt" ... "Rang" ... #NNN
-            mt = _re.search(r'Gesamt.{0,400}?<strong>Rang</strong>.{0,80}?#(\d+)',
-                            html, _re.DOTALL)
-            if mt:
-                result[name] = {'srf_rang': int(mt.group(1)), 'srf_punkte': 0}
+            # Gesamt-Punkte und Rang
+            gesamt = _re.search(r'Gesamt.{0,500}?<strong>Punkte</strong>.{0,40}?(\d+).{0,200}?<strong>Rang</strong>.{0,80}?#(\d+)',
+                                html, _re.DOTALL)
+            if gesamt:
+                result[name] = {'srf_punkte': int(gesamt.group(1)), 'srf_rang': int(gesamt.group(2))}
         except Exception as ex:
             print(f'   ⚠️  {name} ({mid}): {ex}')
         time.sleep(0.1)

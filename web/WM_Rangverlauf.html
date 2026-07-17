@@ -1130,13 +1130,14 @@ function calcRanking(){
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,
       v16,c16:gstot+v16,v8,c8:gstot+v16+v8,v4,c4:gstot+v16+v8+v4,
       v2,c2:gstot+v16+v8+v4+v2,v1,fstot,tot:gstot+fstot+zus,...zusR,
-      srf_pkt:srf.srf_punkte??'–',srf_rang:srf.srf_rang??'–'};
+      srf_pkt:gstot+fstot,srf_rang:srf.srf_rang??'–'};
   });
   const {cols,groupHdr}=wideColsGF(hasZusatz,bonusCols);
   const srfCols=hasSrf?[
-    {lbl:'SRF #',col:'srf_rang',w:38,sep:true},
+    {lbl:'SRF Pkt',col:'srf_pkt',w:44,sep:true},
+    {lbl:'SRF #',  col:'srf_rang',w:36},
   ]:[];
-  const srfGrpTh=hasSrf?`<th colspan="1" style="text-align:center;font-size:8.5px;color:#1a50a0;font-weight:600;border-left:1px solid rgba(0,0,0,0.15);padding:2px 0">SRF</th>`:'';
+  const srfGrpTh=hasSrf?`<th colspan="2" style="text-align:center;font-size:8.5px;color:#1a50a0;font-weight:600;border-left:1px solid rgba(0,0,0,0.15);padding:2px 0">SRF</th>`:'';
   const fullGroupHdr=groupHdr.replace('</tr>',srfGrpTh+'</tr>');
   el.innerHTML=zusLegend+buildWideTable(players,uebSort,'sortUeb',[...cols,...srfCols],hasSrf?fullGroupHdr:groupHdr);
 }
