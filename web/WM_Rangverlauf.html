@@ -1127,10 +1127,11 @@ function calcRanking(){
     const fstot=v16+v8+v4+v2+v1;
     const zusR=playerZus(name);const zus=zusR.zus;
     const srf=hasSrf?(SRF_LEADERBOARD[name]||{}):{};
+    const finaleOver=typeof WM_FINALS_DATA!=='undefined'&&WM_FINALS_DATA.f&&WM_FINALS_DATA.f[0]&&!!WM_FINALS_DATA.f[0].r;
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,
       v16,c16:gstot+v16,v8,c8:gstot+v16+v8,v4,c4:gstot+v16+v8+v4,
       v2,c2:gstot+v16+v8+v4+v2,v1,fstot,tot:gstot+fstot+zus,...zusR,
-      srf_pkt:gstot+fstot,srf_rang:srf.srf_rang??'–'};
+      srf_pkt:finaleOver?gstot+fstot+zus:gstot+fstot,srf_rang:srf.srf_rang??'–'};
   });
   const {cols,groupHdr}=wideColsGF(hasZusatz,bonusCols);
   const srfCols=hasSrf?[
