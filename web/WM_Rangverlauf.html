@@ -995,6 +995,9 @@ function prepareZusatz(){
       });
       keyW[k]=Math.max(16,maxLen*6+6);
     });
+    // Bump keyW to at least the rendered pixel width of the emoji header
+    function emojiW(str){try{const c=document.createElement('canvas');const ctx=c.getContext('2d');ctx.font='15px sans-serif';return Math.ceil(ctx.measureText(str).width)+8;}catch(e){return 36;}}
+    zusatzKeys.forEach((k,i)=>{if(i<ZUS_LABELS.length) keyW[k]=Math.max(keyW[k],emojiW(ZUS_LABELS[i]));});
   }
   function playerZus(name){
     const zus=hasZusatz?(zusatz[name]?.punkte??0):0;
@@ -1020,7 +1023,7 @@ function prepareZusatz(){
   const zusHdr=(hasZusatz&&zusatzKeys.length>0)
     ?zusatzKeys.slice(0,ZUS_LABELS.length).map((k,i)=>
       `<span style="display:inline-block;min-width:${keyW[k]||30}px;text-align:center;font-size:15px">${ZUS_LABELS[i]||k}</span>`
-    ).join('<span style="color:#636366;margin:0 2px"> </span>')
+    ).join('<span style="color:#636366;margin:0 2px">;</span>')
     :'';
   // Bonus cols + groupHdr snippet for tables with 1 GS col (×2, +10)
   const bonusCols=hasZusatz?[
