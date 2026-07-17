@@ -1491,6 +1491,8 @@ function calcFavoriten(){
 function calc10Punkte(){
   const el=document.getElementById('zehnpunkte-body');
   if(!data){el.innerHTML='';return;}
+  try { _calc10PunkteInner(el); } catch(e){ el.innerHTML=`<pre style="color:red;font-size:11px">${e}</pre>`; } }
+function _calc10PunkteInner(el){
   const n=data.gameNums.length;
   const gpEnd=data.gameNums.findIndex(g=>g>72);
   const koFirst=gpEnd===-1?n:gpEnd;
