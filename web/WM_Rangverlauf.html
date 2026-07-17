@@ -372,7 +372,7 @@ function injectVirtualPlayers() {
   }
 }
 let matrixSort = { col: '_total', dir: -1 };
-let pktSort = { col: 'total', dir: -1 };  // 'total' or point value (number)
+let pktSort = { col: 'ph4_total', dir: -1 };
 let uebSort     = { col: 'tot', dir: -1 };
 let zehnpSort   = { col: 'tot', dir: -1 };
 let zehnplusSort= { col: 'tot', dir: -1 };
@@ -1987,31 +1987,50 @@ function calcPunkteverteilung(){
   ];
 
   const allFreqs=phases.map(t=>buildFreqLabeled(t.ranges));
-  const phLookup=allFreqs.map(f=>{const m={};f.players.forEach(p=>{m[p.name]={cnt:p.cnt,total:p.total};});return m;});
-  const totalPlayers=allFreqs[allFreqs.length-1].players;
-  const sorted=[...totalPlayers].sort((a,b)=>b.total-a.total);
+  // Build flat player objects for sorting
+  const flatPlayers=allFreqs[0].players.map(p=>{
+    const obj={name:p.name,color:p.color};
+    allFreqs.forEach((f,pi)=>{
+      const pd=f.players.find(x=>x.name===p.name)||{cnt:{},total:0};
+      LBLS.forEach(v=>{obj[`ph${pi}_${v}`]=pd.cnt[v]||0;});
+      obj[`ph${pi}_total`]=pd.total;
+    });
+    return obj;
+  });
+  const sc=pktSort.col, sd=pktSort.dir;
+  const sorted=[...flatPlayers].sort((a,b)=>{
+    const av=a[sc],bv=b[sc];
+    return typeof av==='string'?sd*av.localeCompare(bv):sd*(av-bv);
+  });
+  let rnk=1;
+  sorted.forEach((r,i)=>{
+    if(i>0&&sorted[i-1][sc]!==r[sc]) rnk=i+1;
+    r.rank=rnk;
+  });
 
   // Group header row
   const phGrpHdr=phases.map((t,i)=>
     `<th colspan="${LBLS.length}" style="text-align:center;font-size:8.5px;color:#444;padding:2px 4px;${i>0?'border-left:2px solid rgba(0,0,0,0.18);':''}border-bottom:1px solid rgba(0,0,0,0.15)">${t.label}</th>`
   ).join('');
 
-  // Label sub-header row
-  const lblHdr=phases.map((_,i)=>LBLS.map(v=>
-    `<th style="text-align:right;padding:1px 4px;font-size:8px;color:${LBL_COLOR[v]||'#888'};font-weight:bold;white-space:nowrap;${i>0&&v===LBLS[0]?'border-left:2px solid rgba(0,0,0,0.18);':''}">${v}</th>`
-  ).join('')).join('');
+  // Label sub-header row — clickable
+  function pktTh(lbl,col,pi,vi){
+    const sep=pi>0&&vi===0?'border-left:2px solid rgba(0,0,0,0.18);':'';
+    const active=pktSort.col===col;
+    const arrow=active?(pktSort.dir===-1?' ▼':' ▲'):'';
+    const fw=active?'bold':'normal';
+    return `<th style="text-align:right;padding:1px 4px;font-size:8px;color:${LBL_COLOR[lbl]||'#888'};font-weight:${fw};white-space:nowrap;cursor:pointer;${sep}" onclick="sortPkt('${col}')">${lbl}${arrow}</th>`;
+  }
+  const lblHdr=phases.map((_,pi)=>LBLS.map((v,vi)=>pktTh(v,`ph${pi}_${v}`,pi,vi)).join('')).join('');
 
   // Data rows
-  let rnk=1;
   const trows=sorted.map((r,i)=>{
-    if(i>0&&sorted[i-1].total!==r.total) rnk=i+1;
-    const bg=rnk===1?'background:#fffbe6':rnk===2?'background:#f5f5f5':rnk===3?'background:#fff4ee':(i%2?'background:#f7f7f9':'');
-    const cells=phLookup.map((ph,pi)=>{
-      const pd=ph[r.name]||{cnt:{},total:0};
-      return LBLS.map((v,vi)=>`<td style="text-align:right;padding:1px 5px;font-size:9px;color:${LBL_COLOR[v]||'#888'};${pi>0&&vi===0?'border-left:2px solid rgba(0,0,0,0.18);':''}">${pd.cnt[v]||'–'}</td>`).join('');
-    }).join('');
+    const bg=r.rank===1?'background:#fffbe6':r.rank===2?'background:#f5f5f5':r.rank===3?'background:#fff4ee':(i%2?'background:#f7f7f9':'');
+    const cells=phases.map((_,pi)=>
+      LBLS.map((v,vi)=>`<td style="text-align:right;padding:1px 5px;font-size:9px;color:${LBL_COLOR[v]||'#888'};${pi>0&&vi===0?'border-left:2px solid rgba(0,0,0,0.18);':''}">${r[`ph${pi}_${v}`]||'–'}</td>`).join('')
+    ).join('');
     return `<tr style="${bg}">
-      <td class="rank-num" style="width:16px;padding:1px 4px;font-size:9px">${rnk}</td>
+      <td class="rank-num" style="width:16px;padding:1px 4px;font-size:9px">${r.rank}</td>
       <td style="font-size:9px;white-space:nowrap;padding:1px 8px 1px 3px">
         <span style="display:inline-block;width:6px;height:6px;border-radius:1px;background:${r.color};margin-right:3px;vertical-align:middle"></span>${r.name}
       </td>${cells}</tr>`;
