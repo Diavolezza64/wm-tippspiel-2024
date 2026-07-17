@@ -1033,7 +1033,7 @@ function prepareZusatz(){
       let maxLen=1;
       data.members.forEach(nm=>{
         const v=zusatz[nm]?.[k];
-        if(v!=null){const d=typeof v==='string'?roundFrac(v):String(v);maxLen=Math.max(maxLen,d.length);}
+        if(v!=null){const d=(typeof v==='string'?roundFrac(v):String(v)).replace(/mehr als (\d+)/gi,'>$1');maxLen=Math.max(maxLen,d.length);}
       });
       keyW[k]=Math.max(24,maxLen*7+6);
     });
