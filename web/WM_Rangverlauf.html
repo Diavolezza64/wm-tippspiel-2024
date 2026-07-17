@@ -1491,8 +1491,6 @@ function calcFavoriten(){
 function calc10Punkte(){
   const el=document.getElementById('zehnpunkte-body');
   if(!data){el.innerHTML='';return;}
-  try { _calc10PunkteInner(el); } catch(e){ el.innerHTML=`<pre style="color:red;font-size:11px">${e}</pre>`; } }
-function _calc10PunkteInner(el){
   const n=data.gameNums.length;
   const gpEnd=data.gameNums.findIndex(g=>g>72);
   const koFirst=gpEnd===-1?n:gpEnd;
@@ -1917,67 +1915,66 @@ function calcPunkteverteilung(){
     return {players,vals:LBLS};
   }
 
-  function tblPkt(label,freq){
-    if(!freq) return `<div style="flex:1;min-width:185px"><div style="font-size:9.5px;font-weight:bold;color:#6c6c70;margin-bottom:5px">${label}</div><div style="color:#555;font-size:10px">–</div></div>`;
-    const {players,vals}=freq;
-
-    const sorted=[...players].sort((a,b)=>{
-      const col=pktSort.col;
-      const av=col==='total'?a.total:(a.cnt[col]||0);
-      const bv=col==='total'?b.total:(b.cnt[col]||0);
-      return pktSort.dir*(bv-av);
-    });
-
-    function thPktH(colKey,lbl,align='right'){
-      const active=pktSort.col===colKey;
-      const arrow=active?(pktSort.dir===-1?' ▼':' ▲'):'';
-      const ac=active?'#fff':'#ccc';
-      const fw=active?'bold':'normal';
-      return `<th style="text-align:${align};padding:1px 4px;font-size:9px;color:${ac};font-weight:${fw};cursor:pointer;white-space:nowrap"
-        onclick="sortPkt('${colKey}')">${lbl}${arrow}</th>`;
-    }
-
-    const hdr=vals.map(v=>thPktH(v,v)).join('');
-    const rows=sorted.map(pl=>{
-      const cells=vals.map(v=>{
-        const cnt=pl.cnt[v]||0;
-        return `<td style="text-align:right;padding:1px 4px;color:${LBL_COLOR[v]||'#888'};font-size:10px">${cnt||'–'}</td>`;
-      }).join('');
-      return `<tr>
-        <td style="font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:4px;max-width:90px">
-          <span style="display:inline-block;width:6px;height:6px;border-radius:1px;background:${pl.color};margin-right:3px;vertical-align:middle"></span>${pl.name}
-        </td>${cells}</tr>`;
-    }).join('');
-    return `<div style="flex:1;min-width:185px">
-      <div style="font-size:9.5px;font-weight:bold;color:#6c6c70;margin-bottom:5px">${label}</div>
-      <table class="ptable" style="width:100%;table-layout:auto">
-        <thead><tr>${thPktH('total','Name','left')}${hdr}</tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
-  }
-
-  const legend=`<div style="font-size:9px;color:#ccc;margin-bottom:10px;line-height:1.9">
-    <span style="color:#e07070;font-weight:bold">0</span> = Falsch &nbsp;·&nbsp;
+  const legend=`<div style="font-size:9px;color:#6c6c70;margin-bottom:8px;line-height:1.9">
+    <span style="color:#c0392b;font-weight:bold">0</span> = Falsch &nbsp;·&nbsp;
     <span style="color:#555;font-weight:bold">T</span> = Tore einer Mannschaft korrekt &nbsp;·&nbsp;
     <span style="color:#1a3a6a;font-weight:bold">S</span> = Sieger korrekt &nbsp;·&nbsp;
-    <span style="color:#7ab8d8;font-weight:bold">S&T</span> = Sieger &amp; Tore einer Mannschaft korrekt &nbsp;·&nbsp;
-    <span style="color:#8de0a0;font-weight:bold">S&D</span> = Sieger &amp; Tordifferenz korrekt &nbsp;·&nbsp;
+    <span style="color:#1a5c8a;font-weight:bold">S&T</span> = Sieger &amp; Tore einer Mannschaft korrekt &nbsp;·&nbsp;
+    <span style="color:#1a7a35;font-weight:bold">S&D</span> = Sieger &amp; Tordifferenz korrekt &nbsp;·&nbsp;
     <span style="color:#b8860b;font-weight:bold">Max</span> = Alles korrekt
   </div>`;
 
   const gsEnd=Math.min(71,n-1);
-  const tables=[
-    {label:'Spiele 1–24',       ranges:[{fi:0,      ti:23,    map:GS_MAP}]},
-    {label:'Spiele 25–48',      ranges:[{fi:24,     ti:47,    map:GS_MAP}]},
-    {label:`Spiele 49–${Math.min(lastG,72)}`, ranges:[{fi:48, ti:gsEnd,  map:GS_MAP}]},
-    {label:'Finalspiele',       ranges:[{fi:koFirst,ti:n-1,   map:FS_MAP}]},
-    {label:'Total',             ranges:[{fi:0,      ti:gsEnd, map:GS_MAP},{fi:koFirst,ti:n-1,map:FS_MAP}]}
+  const phases=[
+    {label:'1–24',      ranges:[{fi:0,      ti:23,    map:GS_MAP}]},
+    {label:'25–48',     ranges:[{fi:24,     ti:47,    map:GS_MAP}]},
+    {label:`49–${Math.min(lastG,72)}`, ranges:[{fi:48,ti:gsEnd,  map:GS_MAP}]},
+    {label:'FS',        ranges:[{fi:koFirst,ti:n-1,   map:FS_MAP}]},
+    {label:'Total',     ranges:[{fi:0,      ti:gsEnd, map:GS_MAP},{fi:koFirst,ti:n-1,map:FS_MAP}]}
   ];
 
-  el.innerHTML=legend+`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:2px">`+
-    tables.map(t=>tblPkt(t.label,buildFreqLabeled(t.ranges))).join('')+
-    `</div>`;
+  const allFreqs=phases.map(t=>buildFreqLabeled(t.ranges));
+  const phLookup=allFreqs.map(f=>{const m={};f.players.forEach(p=>{m[p.name]={cnt:p.cnt,total:p.total};});return m;});
+  const totalPlayers=allFreqs[allFreqs.length-1].players;
+  const sorted=[...totalPlayers].sort((a,b)=>b.total-a.total);
+
+  // Group header row
+  const phGrpHdr=phases.map((t,i)=>
+    `<th colspan="${LBLS.length}" style="text-align:center;font-size:8.5px;color:#444;padding:2px 4px;${i>0?'border-left:2px solid rgba(0,0,0,0.18);':''}border-bottom:1px solid rgba(0,0,0,0.15)">${t.label}</th>`
+  ).join('');
+
+  // Label sub-header row
+  const lblHdr=phases.map((_,i)=>LBLS.map(v=>
+    `<th style="text-align:right;padding:1px 4px;font-size:8px;color:${LBL_COLOR[v]||'#888'};font-weight:bold;white-space:nowrap;${i>0&&v===LBLS[0]?'border-left:2px solid rgba(0,0,0,0.18);':''}">${v}</th>`
+  ).join('')).join('');
+
+  // Data rows
+  let rnk=1;
+  const trows=sorted.map((r,i)=>{
+    if(i>0&&sorted[i-1].total!==r.total) rnk=i+1;
+    const bg=rnk===1?'background:#fffbe6':rnk===2?'background:#f5f5f5':rnk===3?'background:#fff4ee':(i%2?'background:#f7f7f9':'');
+    const cells=phLookup.map((ph,pi)=>{
+      const pd=ph[r.name]||{cnt:{},total:0};
+      return LBLS.map((v,vi)=>`<td style="text-align:right;padding:1px 5px;font-size:9px;color:${LBL_COLOR[v]||'#888'};${pi>0&&vi===0?'border-left:2px solid rgba(0,0,0,0.18);':''}">${pd.cnt[v]||'–'}</td>`).join('');
+    }).join('');
+    return `<tr style="${bg}">
+      <td class="rank-num" style="width:16px;padding:1px 4px;font-size:9px">${rnk}</td>
+      <td style="font-size:9px;white-space:nowrap;padding:1px 8px 1px 3px">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:1px;background:${r.color};margin-right:3px;vertical-align:middle"></span>${r.name}
+      </td>${cells}</tr>`;
+  }).join('');
+
+  el.innerHTML=legend+
+    `<div style="overflow-x:auto;margin-top:2px"><table class="ptable" style="width:auto;table-layout:auto;border-collapse:collapse">
+      <thead>
+        <tr><th colspan="2" style="border:none;padding:0"></th>${phGrpHdr}</tr>
+        <tr>
+          <th style="width:16px;color:#444;padding:1px 2px 1px 4px">#</th>
+          <th style="color:#444;padding:1px 8px 1px 3px;text-align:left">Name</th>${lblHdr}
+        </tr>
+      </thead>
+      <tbody>${trows}</tbody>
+    </table></div>`;
 }
 
 function sortPkt(col){
