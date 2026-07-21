@@ -331,6 +331,7 @@ def fetch_all(session, rounds):
                             'match':        f"{teams[0]['name'] if teams else '?'} vs "
                                             f"{teams[1]['name'] if len(teams) > 1 else '?'}",
                             'final_results': b.get('final_results'),
+                            'pen_results':   b.get('pen_results'),
                             'meta_location': b.get('meta_location') or '',
                         }
                     picks = b.get('picks') or []
@@ -507,6 +508,20 @@ _FINALS_POS = {
 ZUSATZ_KEYS = ['wm', 'ch', 't_ch', 't_k', 'nullnull']
 ZUSATZ_PTS_KEYS = ['p_wm', 'p_ch', 'p_t_ch', 'p_t_k', 'p_nullnull']
 
+# Alias-Mapping: deutsche Namen → mögliche englische API-Namen
+_ALIASES = {
+    'Mexiko': ['Mexico'], 'Brasilien': ['Brazil'], 'Ägypten': ['Egypt'],
+    'Norwegen': ['Norway'], 'Schweiz': ['Switzerland'], 'Österreich': ['Austria'],
+    'Spanien': ['Spain'], 'Schweden': ['Sweden'], 'Türkei': ['Turkey'],
+    'Kolumbien': ['Colombia'], 'Südkorea': ['South Korea'], 'Südafrika': ['South Africa'],
+    'Elfenbeinküste': ["Côte d'Ivoire", 'Ivory Coast'],
+    'DR Kongo': ['Congo DR', 'DR Congo'], 'Kap Verde': ['Cape Verde'],
+    'Neuseeland': ['New Zealand'], 'Schottland': ['Scotland'],
+    'Frankreich': ['France'], 'Deutschland': ['Germany'], 'Niederlande': ['Netherlands'],
+    'Argentinien': ['Argentina'], 'Portugal': ['Portugal'], 'England': ['England'],
+    'USA': ['United States', 'United States of America'],
+}
+
 def _normalize_runde(runde):
     """Normalisiert Runden-Bezeichnungen für Vergleich (verschiedene Formate)."""
     if not runde:
@@ -536,16 +551,27 @@ def calc_zusatz_punkte(games_meta):
 
     sorted_games = sorted(games_meta.values(), key=lambda g: g['event_date'])
 
-    # Weltmeister: Sieger des Finales
+    # Alias-Normalisierung: API-Namen (oft Englisch) → Deutsche Namen
+    _NORM = {}
+    for _de, _ens in _ALIASES.items():
+        _NORM[_de.lower()] = _de
+        for _en in _ens: _NORM[_en.lower()] = _de
+    def _defy(n): return _NORM.get((n or '').strip().lower(), (n or '').strip())
+
+    # Weltmeister: Sieger des Finales (inkl. Elfmeter-Fallback)
     weltmeister = None
     for g in sorted_games:
         if _normalize_runde(g.get('roundName','')) == 'finale':
-            fr = g.get('final_results')
+            fr  = g.get('final_results')
+            pen = g.get('pen_results')
             if fr and len(fr) >= 2:
                 teams = g['match'].split(' vs ')
                 if len(teams) == 2:
-                    if fr[0] > fr[1]: weltmeister = teams[0].strip()
-                    elif fr[1] > fr[0]: weltmeister = teams[1].strip()
+                    if fr[0] > fr[1]:   weltmeister = _defy(teams[0].strip())
+                    elif fr[1] > fr[0]: weltmeister = _defy(teams[1].strip())
+                    elif pen and len(pen) >= 2:  # Unentschieden → Elfmeter
+                        if pen[0] > pen[1]:   weltmeister = _defy(teams[0].strip())
+                        elif pen[1] > pen[0]: weltmeister = _defy(teams[1].strip())
 
     # Schweiz: höchste erreichte Runde
     ch_runde = 'gruppenphase'
@@ -688,16 +714,7 @@ def build_finals_data(games_meta):
     # → Teamname-Suche in games_meta für Resultat
     DAYS_DE = ['Mo','Di','Mi','Do','Fr','Sa','So']
 
-    # Alias-Mapping: deutsche Namen → mögliche englische API-Namen
-    _ALIASES = {
-        'Mexiko': ['Mexico'], 'Brasilien': ['Brazil'], 'Ägypten': ['Egypt'],
-        'Norwegen': ['Norway'], 'Schweiz': ['Switzerland'], 'Österreich': ['Austria'],
-        'Spanien': ['Spain'], 'Schweden': ['Sweden'], 'Türkei': ['Turkey'],
-        'Kolumbien': ['Colombia'], 'Südkorea': ['South Korea'], 'Südafrika': ['South Africa'],
-        'Elfenbeinküste': ["Côte d'Ivoire", 'Ivory Coast'],
-        'DR Kongo': ['Congo DR', 'DR Congo'], 'Kap Verde': ['Cape Verde'],
-        'Neuseeland': ['New Zealand'], 'Schottland': ['Scotland'],
-    }
+    # _ALIASES ist auf Modul-Ebene definiert (wird auch in calc_zusatz_punkte genutzt)
 
     def find_game_by_teams(t1, t2):
         """Sucht in games_meta nach t1 vs t2 (inkl. Alias-Namen), gibt (res, h, d_str) zurück."""
