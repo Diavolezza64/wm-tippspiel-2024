@@ -1204,7 +1204,7 @@ function calcRanking(){
     const v8 =r16?phPts(p,r16.fi,r16.ti):0;
     const v4 = qf?phPts(p,qf.fi,qf.ti)  :0;
     const v2 = sf?phPts(p,sf.fi,sf.ti)  :0;
-    const v1 = Math.max(0,(ff?phPts(p,ff.fi,ff.ti):0)-_getFinaleBonus(name));
+    const v1 = ff?phPts(p,ff.fi,ff.ti):0;
     const fstot=v16+v8+v4+v2+v1;
     const zusR=playerZus(name);const zus=zusR.zus;
     const srf=hasSrf?(SRF_LEADERBOARD[name]||{}):{};
@@ -1640,7 +1640,7 @@ function calc10Punkte(){
     const gstot=r1+r2+r3;
     const v16=r32?phPts(p,r32.fi,r32.ti):0,v8=r16?phPts(p,r16.fi,r16.ti):0,
           v4=qf?phPts(p,qf.fi,qf.ti):0,v2=sf?phPts(p,sf.fi,sf.ti):0;
-    const v1=Math.max(0,(ff?phPts(p,ff.fi,ff.ti):0)-_getFinaleBonus(name));
+    const v1=ff?phPts(p,ff.fi,ff.ti):0;
     const fstot=v16+v8+v4+v2+v1;
     const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,v16,c16:gstot+v16,v8,c8:gstot+v16+v8,
@@ -1673,7 +1673,7 @@ function calc10Plus(){
     const gs=phPts(p,0,gsEnd);
     const v16=r32?phPts(p,r32.fi,r32.ti):0,v8=r16?phPts(p,r16.fi,r16.ti):0,
           v4=qf?phPts(p,qf.fi,qf.ti):0,v2=sf?phPts(p,sf.fi,sf.ti):0;
-    const v1=Math.max(0,(ff?phPts(p,ff.fi,ff.ti):0)-_getFinaleBonus(name));
+    const v1=ff?phPts(p,ff.fi,ff.ti):0;
     const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],gs,
       v16,c16:gs+v16,v8,c8:gs+v16+v8,v4,c4:gs+v16+v8+v4,
@@ -1726,7 +1726,7 @@ function calcX2(){
     const gs=phPts(p,0,gsEnd);
     const v16=r32?phPts(p,r32.fi,r32.ti):0, v8=r16?phPts(p,r16.fi,r16.ti):0,
           v4=qf?phPts(p,qf.fi,qf.ti):0,     v2=sf?phPts(p,sf.fi,sf.ti):0;
-    const v1=Math.max(0,(ff?phPts(p,ff.fi,ff.ti):0)-_getFinaleBonus(name));
+    const v1=ff?phPts(p,ff.fi,ff.ti):0;
     const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],gs,
       v16,c16:gs+v16,v8,c8:gs+v16+v8,v4,c4:gs+v16+v8+v4,
@@ -1807,7 +1807,7 @@ function calcPeter(){
     const v8 =r16?phPts(p,r16.fi,r16.ti):0;
     const v4 = qf?phPts(p,qf.fi,qf.ti)  :0;
     const v2 = sf?phPts(p,sf.fi,sf.ti)  :0;
-    const v1 = Math.max(0,(ff?phPts(p,ff.fi,ff.ti):0)-_getFinaleBonus(name));
+    const v1 = ff?phPts(p,ff.fi,ff.ti):0;
     const fstot=v16+v8+v4+v2+v1;
     const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,
@@ -1870,7 +1870,7 @@ function calcFair(){
     const v8 =r16?phPts(p,r16.fi,r16.ti):0;
     const v4 = qf?phPts(p,qf.fi,qf.ti)  :0;
     const v2 = sf?phPts(p,sf.fi,sf.ti)  :0;
-    const v1 = Math.max(0,(ff?phPts(p,ff.fi,ff.ti):0)-_getFinaleBonus(name));
+    const v1 = ff?phPts(p,ff.fi,ff.ti):0;
     const fstot=v16+v8+v4+v2+v1;
     const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,
