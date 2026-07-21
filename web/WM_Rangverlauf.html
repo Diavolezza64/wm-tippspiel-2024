@@ -1124,7 +1124,7 @@ function calcRanking(){
     const v8 =r16?phPts(p,r16.fi,r16.ti):0;
     const v4 = qf?phPts(p,qf.fi,qf.ti)  :0;
     const v2 = sf?phPts(p,sf.fi,sf.ti)  :0;
-    const v1 = ff?phPts(p,ff.fi,ff.ti)  :0;
+    const v1 = Math.max(0,(ff?phPts(p,ff.fi,ff.ti):0)-_getFinaleBonus(name));
     const fstot=v16+v8+v4+v2+v1;
     const zusR=playerZus(name);const zus=zusR.zus;
     const srf=hasSrf?(SRF_LEADERBOARD[name]||{}):{};
@@ -1559,7 +1559,8 @@ function calc10Punkte(){
     const r1=phPts(p,0,Math.min(23,gsEnd)),r2=phPts(p,24,Math.min(47,gsEnd)),r3=phPts(p,48,Math.min(gsEnd,n-1));
     const gstot=r1+r2+r3;
     const v16=r32?phPts(p,r32.fi,r32.ti):0,v8=r16?phPts(p,r16.fi,r16.ti):0,
-          v4=qf?phPts(p,qf.fi,qf.ti):0,v2=sf?phPts(p,sf.fi,sf.ti):0,v1=ff?phPts(p,ff.fi,ff.ti):0;
+          v4=qf?phPts(p,qf.fi,qf.ti):0,v2=sf?phPts(p,sf.fi,sf.ti):0;
+    const v1=Math.max(0,(ff?phPts(p,ff.fi,ff.ti):0)-_getFinaleBonus(name));
     const fstot=v16+v8+v4+v2+v1;
     const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,v16,c16:gstot+v16,v8,c8:gstot+v16+v8,
@@ -1592,7 +1593,8 @@ function calc10Plus(){
   const players=data.members.map((name,p)=>{
     const gs=phPts(p,0,gsEnd);
     const v16=r32?phPts(p,r32.fi,r32.ti):0,v8=r16?phPts(p,r16.fi,r16.ti):0,
-          v4=qf?phPts(p,qf.fi,qf.ti):0,v2=sf?phPts(p,sf.fi,sf.ti):0,v1=ff?phPts(p,ff.fi,ff.ti):0;
+          v4=qf?phPts(p,qf.fi,qf.ti):0,v2=sf?phPts(p,sf.fi,sf.ti):0;
+    const v1=Math.max(0,(ff?phPts(p,ff.fi,ff.ti):0)-_getFinaleBonus(name));
     const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],gs,
       v16,c16:gs+v16,v8,c8:gs+v16+v8,v4,c4:gs+v16+v8+v4,
@@ -1645,8 +1647,8 @@ function calcX2(){
   const players=data.members.map((name,p)=>{
     const gs=phPts(p,0,gsEnd);
     const v16=r32?phPts(p,r32.fi,r32.ti):0, v8=r16?phPts(p,r16.fi,r16.ti):0,
-          v4=qf?phPts(p,qf.fi,qf.ti):0,     v2=sf?phPts(p,sf.fi,sf.ti):0,
-          v1=ff?phPts(p,ff.fi,ff.ti):0;
+          v4=qf?phPts(p,qf.fi,qf.ti):0,     v2=sf?phPts(p,sf.fi,sf.ti):0;
+    const v1=Math.max(0,(ff?phPts(p,ff.fi,ff.ti):0)-_getFinaleBonus(name));
     const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],gs,
       v16,c16:gs+v16,v8,c8:gs+v16+v8,v4,c4:gs+v16+v8+v4,
@@ -1739,7 +1741,7 @@ function calcPeter(){
     const v8 =r16?phPts(p,r16.fi,r16.ti):0;
     const v4 = qf?phPts(p,qf.fi,qf.ti)  :0;
     const v2 = sf?phPts(p,sf.fi,sf.ti)  :0;
-    const v1 = ff?phPts(p,ff.fi,ff.ti)  :0;
+    const v1 = Math.max(0,(ff?phPts(p,ff.fi,ff.ti):0)-_getFinaleBonus(name));
     const fstot=v16+v8+v4+v2+v1;
     const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,
@@ -1812,7 +1814,7 @@ function calcFair(){
     const v8 =r16?phPts(p,r16.fi,r16.ti):0;
     const v4 = qf?phPts(p,qf.fi,qf.ti)  :0;
     const v2 = sf?phPts(p,sf.fi,sf.ti)  :0;
-    const v1 = ff?phPts(p,ff.fi,ff.ti)  :0;
+    const v1 = Math.max(0,(ff?phPts(p,ff.fi,ff.ti):0)-_getFinaleBonus(name));
     const fstot=v16+v8+v4+v2+v1;
     const zusR=playerZus(name);const zus=zusR.zus;
     return {name,color:PALETTE[p],r1,r2,s2:r1+r2,r3,gstot,
@@ -2049,6 +2051,12 @@ function calcPunkteverteilung(){
     </table></div>`;
 }
 
+// SRF bündelt WM/Torschützen/0:0-Bonuspunkte im Final-Spielresultat →
+// aus v1 herausrechnen, damit kein Doppelzählen mit unserem zus entsteht
+function _getFinaleBonus(name){
+  const zd=(typeof ZUSATZ_DATA!=='undefined'&&ZUSATZ_DATA[name])||{};
+  return (zd.p_wm||0)+(zd.p_t_k||0)+(zd.p_nullnull||0);
+}
 function sortPkt(col){
   if(pktSort.col===col) pktSort.dir*=-1; else {pktSort.col=col; pktSort.dir=-1;}
   calcPunkteverteilung();
